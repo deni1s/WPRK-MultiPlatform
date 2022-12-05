@@ -22,7 +22,7 @@ import kotlinx.coroutines.delay
 @Composable
 fun BottomBar(navController: NavController,  player: ExoPlayer, isPlaying: Boolean, onPlayPauseClick: (Boolean) -> Unit) {
     val bottomTabs = listOf(
-        NavigationRoutes.ShowHome,
+       // NavigationRoutes.ShowHome,
         NavigationRoutes.PodcastHome,
         NavigationRoutes.Membership
     )

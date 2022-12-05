@@ -37,7 +37,7 @@ object DataModule {
     fun provideTransistor(): TransistorApi {
         return Retrofit.Builder()
             .addConverterFactory(GsonConverterFactory.create())
-            .baseUrl(Constants.TRANSISTOR_BASE_URL)
+            .baseUrl(Constants.TRANSISTOR_BASE_URL1)
             .build()
             .create(TransistorApi::class.java)
     }

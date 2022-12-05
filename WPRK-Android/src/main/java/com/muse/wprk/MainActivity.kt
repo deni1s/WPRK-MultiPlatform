@@ -96,31 +96,31 @@ class MainActivity : ComponentActivity(), OnAudioFocusChangeListener {
                     composable(SplashScreen.route) {
                         SplashScreen(navController)
                     }
-                    composable(ShowHome.route) {
-                        ShowHome(
-                            navController = navController,
-                            gradient = backgroundColor,
-                            showsViewModel = hiltViewModel(),
-                            onShowClick = { currentShow = it },
-                            onShowSetScheduleClick = { context, show ->
-                                scheduleShow(context = context, show = show)
-                            }
-                        ) {
-                            onSwitchMediaURL(it) {
-                                isPlaying = true
-                            }
-                        }
-                    }
-                    composable(ShowDetail.route) {
-                        currentShow?.let {
-                            ShowDetail(
-                                show = it,
-                                gradient = backgroundColor
-                            ) { context, show ->
-                                scheduleShow(context = context, show = show)
-                            }
-                        }
-                    }
+//                    composable(ShowHome.route) {
+//                        ShowHome(
+//                            navController = navController,
+//                            gradient = backgroundColor,
+//                            showsViewModel = hiltViewModel(),
+//                            onShowClick = { currentShow = it },
+//                            onShowSetScheduleClick = { context, show ->
+//                                scheduleShow(context = context, show = show)
+//                            }
+//                        ) {
+//                            onSwitchMediaURL(it) {
+//                                isPlaying = true
+//                            }
+//                        }
+//                    }
+//                    composable(ShowDetail.route) {
+//                        currentShow?.let {
+//                            ShowDetail(
+//                                show = it,
+//                                gradient = backgroundColor
+//                            ) { context, show ->
+//                                scheduleShow(context = context, show = show)
+//                            }
+//                        }
+//                    }
                     composable(PodcastHome.route) {
                         PodcastHome(
                             navController = navController,

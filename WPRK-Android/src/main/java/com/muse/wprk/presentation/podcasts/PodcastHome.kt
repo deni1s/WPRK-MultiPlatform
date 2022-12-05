@@ -59,7 +59,7 @@ fun PodcastHome(
     }
     LaunchedEffect(key1 = Unit) {
         podcastViewModel.getPodcasts {
-            podcastViewModel.getFeaturedEpisodes(podcasts[currentShow].id)
+            podcastViewModel.getFeaturedEpisodes("1490")
         }
     }
     podcastViewModel.podcasts.observe(lifecycle) { newPodcasts ->

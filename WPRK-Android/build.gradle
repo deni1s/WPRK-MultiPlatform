@@ -8,20 +8,20 @@ plugins {
 }
 
 android {
-    signingConfigs {
-        debug {
-            storeFile file('/Users/mwaibanda/Repository/WPRKKeyStore.jdk')
-            storePassword 'Wprk91.5'
-            keyAlias 'Dev'
-            keyPassword 'Wprk91.5'
-        }
-        release {
-            storeFile file('/Users/mwaibanda/Repository/WPRKKeyStore.jdk')
-            storePassword 'Wprk91.5'
-            keyAlias 'Dev'
-            keyPassword 'Wprk91.5'
-        }
-    }
+//    signingConfigs {
+//        debug {
+//            storeFile file('/Users/mwaibanda/Repository/WPRKKeyStore.jdk')
+//            storePassword 'Wprk91.5'
+//            keyAlias 'Dev'
+//            keyPassword 'Wprk91.5'
+//        }
+//        release {
+//            storeFile file('/Users/mwaibanda/Repository/WPRKKeyStore.jdk')
+//            storePassword 'Wprk91.5'
+//            keyAlias 'Dev'
+//            keyPassword 'Wprk91.5'
+//        }
+//    }
     compileSdk 32
 
     defaultConfig {
@@ -36,7 +36,7 @@ android {
         vectorDrawables {
             useSupportLibrary true
         }
-        signingConfig signingConfigs.release
+//        signingConfig signingConfigs.release
     }
 
     buildTypes {

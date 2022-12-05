@@ -6,5 +6,4 @@ import kotlinx.serialization.Serializable
 @Serializable
 data class EpisodesDTO(
     val data: List<EpisodeDTO>
-
 )
