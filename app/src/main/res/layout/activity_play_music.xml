@@ -13,7 +13,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_gravity="center"
-        android:layout_marginStart="20dp"
+        android:padding="20dp"
         android:src="@drawable/ic_arrow_left"
         app:layout_constraintBottom_toBottomOf="@+id/textView"
         app:layout_constraintStart_toStartOf="parent"
@@ -24,18 +24,28 @@
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_marginTop="20dp"
-        android:layout_marginEnd="24dp"
         android:layout_weight="1"
         android:gravity="center"
         android:text="@string/now_playing"
         android:textAppearance="?textAppearanceHeadline6"
-        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintEnd_toStartOf="@+id/img_share_podcast"
         app:layout_constraintHorizontal_bias="0.0"
         app:layout_constraintStart_toEndOf="@+id/img_back_playMusic"
         app:layout_constraintTop_toTopOf="parent" />
 
+    <ImageView
+        android:id="@+id/img_share_podcast"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center"
+        android:padding="16dp"
+        android:src="@drawable/ic_baseline_share_24"
+        app:layout_constraintBottom_toBottomOf="@+id/textView"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toTopOf="@+id/textView" />
 
-    <amin.rz3.musicplayeronline.view.MusicPlayerOnlineImageView
+
+    <ImageView
         android:id="@+id/cover_music"
         android:layout_width="match_parent"
         android:layout_height="0dp"
@@ -43,109 +53,55 @@
         android:layout_marginTop="35dp"
         android:layout_marginEnd="20dp"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/textView"
-        app:roundedCornerRadius="15dp"
         app:layout_constraintHeight_percent="0.44"
-        />
-
-
-    <TextView
-        android:id="@+id/tv_name_music"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:gravity="center"
-        android:maxLines="1"
-        android:paddingStart="15dp"
-        android:paddingEnd="15dp"
-        android:layout_marginTop="20dp"
-        android:textAppearance="?textAppearanceHeadline4"
-        app:layout_constraintEnd_toEndOf="parent"
+        tools:src="@drawable/default_image"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/cover_music"
-        tools:text="Selfish Love Dj Snake" />
+        app:layout_constraintTop_toBottomOf="@+id/textView" />
 
     <TextView
         android:id="@+id/tv_singer_music"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:layout_marginTop="20dp"
+        android:gravity="center"
+        android:paddingStart="16dp"
+        android:paddingEnd="16dp"
+        android:textAppearance="?textAppearanceHeadline4"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/cover_music"
+        tools:text="Selfish Love 31231231233213123123Dj Snake" />
+
+    <TextView
+        android:id="@+id/tv_name_music"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
         android:layout_marginTop="15dp"
         android:gravity="center"
-        android:maxLines="1"
-        android:paddingStart="15dp"
-        android:paddingEnd="15dp"
+        android:paddingStart="16dp"
+        android:paddingEnd="16dp"
         android:textAppearance="?textAppearanceHeadline5"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/tv_name_music"
+        app:layout_constraintTop_toBottomOf="@+id/tv_singer_music"
         tools:text="Dj Snake" />
 
     <androidx.constraintlayout.widget.ConstraintLayout
         android:layout_width="match_parent"
         android:layout_height="0dp"
         android:layout_marginTop="15dp"
-        android:layout_weight="1"
         android:background="@drawable/shape_play_music"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/tv_singer_music">
-
-        <ImageView
-            android:id="@+id/img_volum_down"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginStart="32dp"
-            android:layout_marginTop="32dp"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="parent"
-            app:srcCompat="@drawable/ic_volume_down"
-            android:clickable="true"
-            android:focusable="true"
-            android:background="@drawable/ic_volume_down_ripple"
-            app:tint="@android:color/transparent"
-            android:tintMode="src_in"/>
-
-        <ImageView
-            android:id="@+id/img_volum_up"
-            android:layout_width="22dp"
-            android:layout_height="22dp"
-            android:layout_marginTop="32dp"
-            android:layout_marginEnd="32dp"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintTop_toTopOf="parent"
-            app:srcCompat="@drawable/ic_volume_up"
-            android:clickable="true"
-            android:focusable="true"
-            android:background="@drawable/ic_volume_up_ripple"
-            app:tint="@android:color/transparent"
-            android:tintMode="src_in"/>
-
-        <ImageView
-            android:id="@+id/img_download"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginEnd="32dp"
-            app:layout_constraintBottom_toBottomOf="@+id/img_volum_up"
-            app:layout_constraintEnd_toStartOf="@+id/img_volum_up"
-            app:layout_constraintHorizontal_bias="0.564"
-            app:layout_constraintStart_toEndOf="@+id/img_volum_down"
-            app:layout_constraintTop_toTopOf="parent"
-            app:layout_constraintVertical_bias="1.0"
-            app:srcCompat="@drawable/ic_downlaod"
-            android:clickable="true"
-            android:focusable="true"
-            android:background="@drawable/ic_download_ripple"
-            app:tint="@android:color/transparent"
-            android:tintMode="src_in"/>
-
+        app:layout_constraintTop_toBottomOf="@+id/tv_name_music">
 
         <com.google.android.material.slider.Slider
             android:id="@+id/slider"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginStart="20dp"
-            android:layout_marginTop="16dp"
+            android:layout_marginTop="32dp"
             android:layout_marginEnd="20dp"
             android:value="0"
             android:valueFrom="0"
@@ -154,7 +110,7 @@
             app:labelBehavior="gone"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/img_download"
+            app:layout_constraintTop_toTopOf="parent"
             app:thumbColor="@color/yellow"
             app:trackColorActive="@color/yellow"
             app:trackColorInactive="@color/black4" />
@@ -183,26 +139,51 @@
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="@+id/slider" />
 
+        <com.google.android.material.floatingactionbutton.FloatingActionButton
+            android:id="@+id/btn_skip_previous"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginEnd="16dp"
+            android:visibility="gone"
+            app:backgroundTint="@color/black3"
+            app:layout_constraintBottom_toBottomOf="@id/PlayProgress"
+            app:layout_constraintRight_toLeftOf="@id/PlayProgress"
+            app:layout_constraintTop_toTopOf="@id/PlayProgress"
+            app:srcCompat="@drawable/ic_baseline_skip_previous_24" />
+
         <com.github.jorgecastilloprz.FABProgressCircle
             android:id="@+id/PlayProgress"
             android:layout_width="60dp"
             android:layout_height="60dp"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/slider"
             android:layout_marginTop="10dp"
+            android:layout_marginBottom="32dp"
             app:arcColor="@color/yellow"
-            app:circleSize="normal">
+            app:circleSize="normal"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/slider">
 
             <com.google.android.material.floatingactionbutton.FloatingActionButton
                 android:id="@+id/btn_play_music"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                app:srcCompat="@drawable/ic_play"
-                app:backgroundTint="@color/black3" />
+                app:backgroundTint="@color/black3"
+                app:srcCompat="@drawable/ic_play" />
 
         </com.github.jorgecastilloprz.FABProgressCircle>
 
+        <com.google.android.material.floatingactionbutton.FloatingActionButton
+            android:id="@+id/btn_skip_next"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="16dp"
+            android:visibility="gone"
+            app:backgroundTint="@color/black3"
+            app:layout_constraintBottom_toBottomOf="@id/PlayProgress"
+            app:layout_constraintLeft_toRightOf="@id/PlayProgress"
+            app:layout_constraintTop_toTopOf="@id/PlayProgress"
+            app:srcCompat="@drawable/ic_baseline_skip_next_24" />
 
     </androidx.constraintlayout.widget.ConstraintLayout>
 </androidx.constraintlayout.widget.ConstraintLayout>

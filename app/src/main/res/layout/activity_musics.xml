@@ -26,15 +26,16 @@
                     android:layout_height="wrap_content"
                     android:layout_gravity="center"
                     android:src="@drawable/ic_arrow_left"
-                    android:layout_marginStart="20dp"/>
+                    android:padding="20dp"
+                    />
 
                 <TextView
-                    android:id="@+id/textView2"
+                    android:id="@+id/textViewMusicTitle"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:gravity="center"
                     android:layout_gravity="center"
-                    android:text="@string/last_musics"
+                    android:text="@string/see_all"
                     android:layout_marginEnd="20dp"
                     android:textAppearance="?textAppearanceHeadline6"
                     />
@@ -49,5 +50,19 @@
         </LinearLayout>
 
     </androidx.core.widget.NestedScrollView>
+
+    <TextView
+        android:id="@+id/text_view_empty_music"
+        android:layout_width="wrap_content"
+        android:layout_height="?attr/actionBarSize"
+        android:layout_gravity="center"
+        android:gravity="center"
+        android:visibility="gone"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        android:text="@string/empty"
+        android:textAppearance="?textAppearanceHeadline6" />
 
 </androidx.coordinatorlayout.widget.CoordinatorLayout>
