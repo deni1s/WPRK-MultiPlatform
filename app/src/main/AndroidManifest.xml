@@ -1,12 +1,15 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    package="ge.denale.podcastlistener">
+    package="ru.denale.podcastlistener">
 
     <uses-permission android:name="android.permission.INTERNET" />
-    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
+    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
+
+    <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
 
     <application
-        android:name="ge.denale.podcastlistener.App"
+        android:name="ru.denale.podcastlistener.App"
         android:allowBackup="true"
         android:icon="@mipmap/ic_launcher"
         android:label="@string/app_name"
@@ -15,26 +18,65 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.MusicPlayerOnline"
         android:usesCleartextTraffic="true">
-        <activity android:name="ge.denale.podcastlistener.feature.authors.AuthorsActivity"/>
-        <activity android:name="ge.denale.podcastlistener.feature.category.CategoryActivity"/>
-        <activity android:name="ge.denale.podcastlistener.feature.activities.musics.MusicsActivity" />
-        <activity android:name="ge.denale.podcastlistener.feature.activities.playmusic.PlayMusic"
-            android:exported="true">
+
+        <service
+            android:name=".feature.activities.playmusic.MusicPlayerService"
+            android:foregroundServiceType="mediaPlayback"
+            android:screenOrientation="portrait" />
+
+        <activity
+            android:name="ru.denale.podcastlistener.feature.authors.AuthorsActivity"
+            android:screenOrientation="portrait" />
+        <activity
+            android:name="ru.denale.podcastlistener.feature.category.CategoryActivity"
+            android:screenOrientation="portrait" />
+        <activity
+            android:name="ru.denale.podcastlistener.feature.activities.musics.MusicsActivity"
+            android:screenOrientation="portrait" />
+
+        <activity
+            android:name="ru.denale.podcastlistener.feature.activities.playmusic.PlayMusic1"
+            android:exported="true"
+            android:launchMode="singleTask"
+            android:screenOrientation="portrait">
             <intent-filter>
                 <action android:name="android.intent.action.VIEW" />
+
                 <category android:name="android.intent.category.DEFAULT" />
                 <category android:name="android.intent.category.BROWSABLE" />
 
                 <!-- Define your deep link URL here -->
                 <data
-                    android:scheme="@string/deeplink_scheme"
                     android:host="@string/deeplink_path"
-                    android:pathPrefix="@string/deeplink_podcast_path" />
+                    android:pathPrefix="@string/deeplink_podcast_path"
+                    android:scheme="@string/deeplink_scheme" />
             </intent-filter>
         </activity>
-        <activity android:name="ge.denale.podcastlistener.feature.advertisment.InterstitialAdActivity"/>
-        <activity android:name="ge.denale.podcastlistener.feature.home.MainActivity"
-            android:exported="true">
+
+        <activity
+            android:name="ru.denale.podcastlistener.feature.activities.playmusic.PlayMusic"
+            android:exported="true"
+            android:screenOrientation="portrait">
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW" />
+
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+
+                <!-- Define your deep link URL here -->
+                <data
+                    android:host="@string/deeplink_path"
+                    android:pathPrefix="@string/deeplink_podcast_path"
+                    android:scheme="@string/deeplink_scheme" />
+            </intent-filter>
+        </activity>
+        <activity
+            android:name="ru.denale.podcastlistener.feature.advertisment.InterstitialAdActivity"
+            android:screenOrientation="portrait" />
+        <activity
+            android:name="ru.denale.podcastlistener.feature.home.MainActivity"
+            android:exported="true"
+            android:screenOrientation="portrait">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 

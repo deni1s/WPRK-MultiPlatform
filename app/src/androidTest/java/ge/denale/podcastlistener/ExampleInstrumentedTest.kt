@@ -1,4 +1,4 @@
-package ge.denale.podcastlistener
+package ru.denale.podcastlistener
 
 import androidx.test.platform.app.InstrumentationRegistry
 import androidx.test.ext.junit.runners.AndroidJUnit4

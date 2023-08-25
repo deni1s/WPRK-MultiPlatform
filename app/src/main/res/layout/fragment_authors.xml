@@ -18,7 +18,7 @@
                 android:layout_height="?attr/actionBarSize"
                 android:layout_gravity="center"
                 android:gravity="center"
-                android:text="@string/authors"
+                android:text="@string/all_authors"
                 android:textAppearance="?textAppearanceHeadline6" />
 
             <androidx.recyclerview.widget.RecyclerView

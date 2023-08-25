@@ -1,7 +1,11 @@
 <shape xmlns:android="http://schemas.android.com/apk/res/android">
-    <solid
-        android:color="@android:color/transparent" />
-    <stroke
-        android:width="2dp"
-        android:color="#80F8EF06"/>
+    <gradient
+        android:angle="0"
+        android:centerColor="#c19843"
+        android:endColor="#d3b568"
+        android:startColor="#f4e9a9"
+        android:type="linear" />
+    <size
+        android:width="300dp"
+        android:height="2dp" />
 </shape>

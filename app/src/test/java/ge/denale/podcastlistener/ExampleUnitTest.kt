@@ -1,4 +1,4 @@
-package ge.denale.podcastlistener
+package ru.denale.podcastlistener
 
 import org.junit.Test
 
