@@ -6,9 +6,9 @@ import android.util.Log
 import androidx.room.Room
 import com.bumptech.glide.annotation.GlideModule
 import com.bumptech.glide.module.AppGlideModule
+import com.yandex.metrica.YandexMetrica
+import com.yandex.metrica.YandexMetricaConfig
 import com.yandex.mobile.ads.common.MobileAds
-import com.yandex.mobile.ads.nativeads.NativeBulkAdLoader
-import ru.denale.podcastlistener.data.AdvertisementMixer
 import ru.denale.podcastlistener.data.database.MusicDatabase
 import ru.denale.podcastlistener.data.repo.*
 import ru.denale.podcastlistener.data.repo.source.*
@@ -29,7 +29,6 @@ import org.koin.android.viewmodel.dsl.viewModel
 import org.koin.core.context.startKoin
 import org.koin.dsl.module
 
-
 private const val PREFERENCES_NAME = "podcast_preferences"
 private const val DATABASE_NAME = "podcast-types-db"
 
@@ -47,6 +46,15 @@ class App : Application() {
         ) { Log.d(YANDEX_MOBILE_ADS_TAG, "SDK initialized") }
         MobileAds.enableDebugErrorIndicator(true)
 
+        if (!BuildConfig.DEBUG) {
+            val config =
+                YandexMetricaConfig.newConfigBuilder(BuildConfig.YANDEX_APP_METRICS).build();
+            // Initializing the AppMetrica SDK.
+            YandexMetrica.activate(applicationContext, config);
+            // Automatic tracking of user activity.
+            YandexMetrica.enableActivityAutoTracking(this)
+        }
+
         val myModules = module {
             single { getSharedPreferences(PREFERENCES_NAME, MODE_PRIVATE) }
             single { createClient(this@App, get()) }
@@ -56,14 +64,12 @@ class App : Application() {
                     .build().musicDao()
             }
             //single { database.musicDao() }
-            single { NativeBulkAdLoader(this@App) }
-            single { AdvertisementMixer() }
             single<ImageLoadingService> { FrescoImageLoadingServiceImpl() }
             factory<BannerRepository> { BannerRepositoryImpl(BannerRemoteDataSource(get())) }
             factory<UserRepository> { UserRepositoryImpl(UserRemoteDataSource(get())) }
             factory<CategoryRepository> { CategoryRepositoryImpl(CategoryRemoteDataSource(get())) }
             factory<AuthorRepository> { AuthorRepositoryImpl(AuthorRemoteDataSource(get())) }
-            factory<AdvertisementRepository> { AdvertismentRepositoryImpl(get(), get()) }
+            factory<AdvertisementRepository> { AdvertismentRepositoryImpl(get()) }
             factory { CategoryAdapter(get()) }
             factory { AuthorsAdapter(get()) }
             factory<MusicRepository> {
@@ -74,11 +80,11 @@ class App : Application() {
                 )
             }
             factory { MusicAdapter(get()) }
-            viewModel { HomeViewModel(get(), get(), get(), get(), get(), get(), get()) }
-            viewModel { AuthorsViewModel(get(), get(), get()) }
-            viewModel { CategoryViewModel(get(), get(), get()) }
-            viewModel { (bundle: Bundle?) -> MusicsViewModel(bundle, get(), get(), get()) }
-            viewModel { (bundle: Bundle?) -> PlayMusicViewModel(bundle, get(), get()) }
+            viewModel { HomeViewModel(get(), get(), get(), get(), get()) }
+            viewModel { AuthorsViewModel(get(), get()) }
+            viewModel { CategoryViewModel(get(), get()) }
+            viewModel { (bundle: Bundle?) -> MusicsViewModel(bundle, get(), get()) }
+            viewModel { (bundle: Bundle?) -> PlayMusicViewModel(bundle, get(), get(), get()) }
         }
 
         startKoin {

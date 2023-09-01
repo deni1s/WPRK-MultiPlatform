@@ -23,7 +23,6 @@ import ru.denale.podcastlistener.data.repo.MusicRepository
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.disposables.CompositeDisposable
 import io.reactivex.schedulers.Schedulers
-import kotlinx.android.parcel.Parcelize
 import org.koin.android.ext.android.inject
 
 
@@ -36,7 +35,7 @@ const val INITIALIZATION_WITH_TYPE_COMMAND = "initializeWithType"
 const val INITIALIZATION_WITH_PREVIOUS_COMMAND = "initializeWithPrevious"
 
 sealed class InitializationType {
-    data class Type(val type: String) : InitializationType()
+    data class Type(val id: String) : InitializationType()
     data class PodcastId(val podcastId: String) : InitializationType()
 }
 
@@ -209,7 +208,7 @@ class MusicPlayerService : Service() {
     private fun getClickWholeLayoutIntent(): PendingIntent {
         val intent = Intent(this, PlayMusic1::class.java)
         val initialType = when (initializationType) {
-            is InitializationType.Type -> INITIALIZATION_WITH_TYPE_COMMAND + (initializationType as InitializationType.Type).type
+            is InitializationType.Type -> INITIALIZATION_WITH_TYPE_COMMAND + (initializationType as InitializationType.Type).id
             is InitializationType.PodcastId -> INITIALIZATION_WITH_PODCAST_COMMAND + (initializationType as InitializationType.PodcastId).podcastId
             null -> INITIALIZATION_COMMAND
         }
@@ -561,7 +560,7 @@ class MusicPlayerService : Service() {
         if (initializationType != null && initializationType is InitializationType.Type) {
             musicList.getOrNull(musicPosition)?.let {
                 musicRepository.saveLastSessionData(
-                    (initializationType as InitializationType.Type).type,
+                    (initializationType as InitializationType.Type).id,
                     it.id,
                     mediaPlayer?.currentPosition
                 )

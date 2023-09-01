@@ -9,12 +9,19 @@ import android.content.ServiceConnection
 import android.content.pm.PackageManager
 import android.os.Bundle
 import android.os.IBinder
+import android.util.Log
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.core.view.isVisible
 import com.google.android.material.slider.Slider
+import com.yandex.mobile.ads.banner.BannerAdEventListener
+import com.yandex.mobile.ads.banner.BannerAdSize
+import com.yandex.mobile.ads.banner.BannerAdView
+import com.yandex.mobile.ads.common.AdRequest
+import com.yandex.mobile.ads.common.AdRequestError
+import com.yandex.mobile.ads.common.ImpressionData
 import ru.denale.podcastlistener.R
 import ru.denale.podcastlistener.common.SCREEN_PODCAST_ID_DATA
 import ru.denale.podcastlistener.common.convertMillisToString
@@ -25,6 +32,7 @@ import kotlinx.android.synthetic.main.activity_play_music.*
 import org.koin.android.ext.android.inject
 import org.koin.android.viewmodel.ext.android.viewModel
 import org.koin.core.parameter.parametersOf
+import ru.denale.podcastlistener.BuildConfig
 import java.util.*
 import java.util.concurrent.TimeUnit
 
@@ -51,6 +59,7 @@ class PlayMusic1 : AppCompatActivity() {
     private var podcastId: String? = null
     private var progress: Int? = null
     private var command: String = INITIALIZATION_COMMAND
+    private var bannerAdView: BannerAdView? = null
 
     private val connection = object : ServiceConnection {
         override fun onServiceConnected(name: ComponentName?, service: IBinder?) {
@@ -174,7 +183,6 @@ class PlayMusic1 : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_play_music)
-
         intent.data?.getQueryParameter(SCREEN_PODCAST_ID_DATA)?.let {
             stopService(getCurrentRunningServiceIntent("ru.denale.podcastlistener"))
             playMusicViewModel.loadPodcastId(it)
@@ -229,14 +237,6 @@ class PlayMusic1 : AppCompatActivity() {
                     progress
                 )
             )
-//            if (wasServiceInitialized) {
-//                sendCommand(
-//                    MediaActivityEvent.onNewInitializationRequired(
-//                        list,
-//                        isAdvertisementAvialable
-//                    )
-//                )
-//            }
         }
 
         playMusicViewModel.isAdvertisementAvailableData.observe(this) {
@@ -244,7 +244,6 @@ class PlayMusic1 : AppCompatActivity() {
             if (!isAdvertisementAvialable) {
                 advWasShown = true
             }
-            // sendCommand(MediaActivityEvent.onAdvertisementInfoAvailable(it))
         }
 
 
@@ -253,7 +252,7 @@ class PlayMusic1 : AppCompatActivity() {
         }
 
         playMusicViewModel.sessionLiveData.observe(this) {
-            type = InitializationType.Type(it.type)
+            type = InitializationType.Type(it.waveId)
             podcastId = it.podcastId
             progress = it.progress
         }
@@ -372,12 +371,16 @@ class PlayMusic1 : AppCompatActivity() {
 
     override fun onStop() {
         super.onStop()
+        bannerAdView?.destroy()
+        bannerAdView?.setBannerAdEventListener(null)
+        bannerAdView = null
         timer?.cancel()
         timer = null
     }
 
     override fun onStart() {
         super.onStart()
+        populateAdBanner()
         if (wasServiceInitialized && !isAdvertisementDisplaying) {
             sendCommand(MediaActivityEvent.onNewDataRequired)
         }
@@ -487,7 +490,57 @@ class PlayMusic1 : AppCompatActivity() {
         btn_skip_previous.isVisible = !isFirst
 
         timer?.cancel()
+
+        player_screen_warning.isVisible = !music.warningDescription.isNullOrEmpty()
+        player_screen_warning.text = music.warningDescription.orEmpty()
         //  btn_play_music.setImageResource(R.drawable.ic_play)
+    }
+
+    private fun populateAdBanner() {
+        if (playMusicViewModel.isAdvertisementAllowed()) {
+            bannerAdView = BannerAdView(this)
+            val size = BannerAdSize.stickySize(this.applicationContext, resources.displayMetrics.widthPixels)
+            player_adv_banner.layoutParams = player_adv_banner.layoutParams.apply {
+                height = dpToPx(this@PlayMusic1, size.height.toFloat())
+            }
+            bannerAdView?.apply {
+                bannerAdView = this
+                setAdSize(size)
+                setAdUnitId(BuildConfig.PLAYER_TOP_AD_UNIT_ID)
+                setBannerAdEventListener(object : BannerAdEventListener {
+                    override fun onAdLoaded() {
+                        // If this callback occurs after the activity is destroyed, you
+                        // must call destroy and return or you may get a memory leak.
+                        // Note `isDestroyed` is a method on Activity.
+
+                        if (isDestroyed) {
+                            bannerAdView?.destroy()
+                            return
+                        } else {
+                            player_adv_banner.addView(bannerAdView)
+                        }
+                    }
+
+                    override fun onAdFailedToLoad(adRequestError: AdRequestError) = Unit
+
+                    override fun onAdClicked() = Unit
+
+                    override fun onLeftApplication() = Unit
+
+                    override fun onReturnedToApplication() = Unit
+
+                    override fun onImpression(impressionData: ImpressionData?) = Unit
+                })
+                loadAd(AdRequest.Builder().build())
+            }
+        } else {
+            player_adv_banner.isVisible = false
+        }
+    }
+
+    fun dpToPx(context: Context, dp: Float): Int {
+        val density = context.resources.displayMetrics.density
+        return (dp * density + 0.5f).toInt()
     }
 
     override fun onDestroy() {

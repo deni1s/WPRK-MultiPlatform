@@ -9,7 +9,7 @@
     android:paddingTop="10dp"
     android:paddingEnd="10dp">
 
-    <com.yandex.mobile.ads.nativeads.template.NativeBannerView
+    <com.yandex.mobile.ads.nativeads.NativeAdView
         android:id="@+id/native_ad"
         android:layout_width="0dp"
         android:layout_height="70dp"

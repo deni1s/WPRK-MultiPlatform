@@ -1,60 +1,33 @@
 package ru.denale.podcastlistener.data.repo
 
 import android.content.SharedPreferences
-import com.yandex.mobile.ads.common.AdRequestError
-import com.yandex.mobile.ads.nativeads.NativeAd
-import com.yandex.mobile.ads.nativeads.NativeAdRequestConfiguration
-import com.yandex.mobile.ads.nativeads.NativeBulkAdLoadListener
-import com.yandex.mobile.ads.nativeads.NativeBulkAdLoader
-import ru.denale.podcastlistener.BuildConfig
-import ru.denale.podcastlistener.feature.home.IS_ADVERTISEMENT_ALLOWED
-import io.reactivex.Single
-import io.reactivex.subjects.SingleSubject
+
+const val IS_ADVERTISEMENT_ALLOWED_KEY = "is_advertisement_allowed"
+const val ENTRANCE_COUNT_KEY = "enterance_count"
+const val AD_FREE_ENTRANCES_COUNT = 4
 
 class AdvertismentRepositoryImpl(
-    private val nativeAdLoader: NativeBulkAdLoader,
-    val sharedPreferences: SharedPreferences
+    private val sharedPreferences: SharedPreferences
 ) : AdvertisementRepository {
 
-    private val advertisementSubject = SingleSubject.create<List<NativeAd>>()
+    private var enteranceCount: Int? = null
 
-    override fun getNativeAdvList(count: Int, adId: String): Single<List<NativeAd>> {
-        val parameters: HashMap<String, String> = hashMapOf(
-            "preferable-height" to "120",
-            "preferable-width" to "120",
-        )
-        loadAvertisement(parameters, count, adId)
-        return advertisementSubject
+    override fun isAdvertisementAllowed(): Boolean {
+        val isTooMuchFree = (enteranceCount ?: getEntrancesCount()) > AD_FREE_ENTRANCES_COUNT
+        return sharedPreferences.getBoolean(IS_ADVERTISEMENT_ALLOWED_KEY, true) && isTooMuchFree
     }
 
-    override fun getHorizontalNativeAdvList(count: Int, adId: String): Single<List<NativeAd>> {
-        val parameters: HashMap<String, String> = hashMapOf(
-            "preferable-height" to "70",
-            "preferable-width" to "match_parent"
-        )
-        loadAvertisement(parameters, count, adId)
-        return advertisementSubject
+    override fun setAdvertisementAllowed(isAllowed: Boolean) {
+        sharedPreferences.edit().putBoolean(IS_ADVERTISEMENT_ALLOWED_KEY, isAllowed).apply()
     }
 
-    private fun loadAvertisement(parameters: HashMap<String, String>, count: Int, adId: String) {
-        val isAdvertisementAllowed = sharedPreferences.getBoolean(IS_ADVERTISEMENT_ALLOWED, true)
-        if (!isAdvertisementAllowed) {
-            advertisementSubject.onSuccess(listOf())
-            return
+    override fun increaseEnterance() {
+        getEntrancesCount().let {
+            sharedPreferences.edit().putInt(ENTRANCE_COUNT_KEY, it + 1).apply()
         }
-        nativeAdLoader.setNativeBulkAdLoadListener(object : NativeBulkAdLoadListener {
-            override fun onAdsLoaded(nativeAds: List<NativeAd>) {
-                advertisementSubject.onSuccess(nativeAds)
-            }
+    }
 
-            override fun onAdsFailedToLoad(error: AdRequestError) {
-                advertisementSubject.onSuccess(listOf())
-            }
-        })
-
-        val nativeAdRequestConfiguration =
-            NativeAdRequestConfiguration.Builder(adId)
-                .setParameters(parameters).build()
-        nativeAdLoader.loadAds(nativeAdRequestConfiguration, count)
+    private fun getEntrancesCount(): Int {
+        return sharedPreferences.getInt(ENTRANCE_COUNT_KEY, 0)
     }
 }

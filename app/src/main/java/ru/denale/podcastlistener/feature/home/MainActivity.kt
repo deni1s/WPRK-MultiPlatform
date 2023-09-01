@@ -1,9 +1,6 @@
 package ru.denale.podcastlistener.feature.home
 
-import android.content.Intent
-import android.content.SharedPreferences
 import android.os.Bundle
-import android.preference.PreferenceManager
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.isVisible
 import androidx.lifecycle.LiveData
@@ -11,14 +8,10 @@ import androidx.navigation.NavController
 import com.google.android.material.bottomnavigation.BottomNavigationView
 import ru.denale.podcastlistener.R
 import ru.denale.podcastlistener.common.setupWithNavController
-import ru.denale.podcastlistener.feature.advertisment.InterstitialAdActivity
-import org.koin.android.ext.android.inject
 
 const val ENTERANCE_COUNT = "enterance_count"
-const val IS_ADVERTISEMENT_ALLOWED = "is_advertisement_allowed"
 const val USER_ID_KEY = "user_id"
 const val FIRST_ADD_ENTERANCE_COUNT = -1
-private const val PREFERENCES_NAME = "podcast_preferences"
 
 class MainActivity : AppCompatActivity() {
     private var currentNavController: LiveData<NavController>? = null

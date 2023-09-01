@@ -54,8 +54,8 @@ class AuthorsFragment : MusicPlayerOnlineFragment(), AuthorsAdapter.OnClickAutho
         authorsAdapter.onAuthorClicked = this
 
         disposable = authorsViewModel.authorLiveData.subscribe {
-            authorsAdapter.authorsArray.addAll(it)
-            authorsAdapter.notifyItemRangeChanged(authorsAdapter.authorsArray.size, it.size)
+            authorsAdapter.authorsArray.addAll(it.list)
+            authorsAdapter.notifyItemRangeChanged(authorsAdapter.authorsArray.size, it.list.size)
         }
 
         authorsViewModel.progressbarLiveData.observe(viewLifecycleOwner) {

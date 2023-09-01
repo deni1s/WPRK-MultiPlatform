@@ -5,22 +5,17 @@ import ru.denale.podcastlistener.common.MusicPlayerSignleObserver
 import ru.denale.podcastlistener.data.Genre
 import ru.denale.podcastlistener.data.repo.CategoryRepository
 import androidx.lifecycle.MutableLiveData
-import com.yandex.mobile.ads.nativeads.NativeAd
-import ru.denale.podcastlistener.data.AdvertisementMixer
-import ru.denale.podcastlistener.data.Author
-import ru.denale.podcastlistener.data.Music
 import ru.denale.podcastlistener.data.repo.AdvertisementRepository
 import io.reactivex.Single
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.schedulers.Schedulers
 import io.reactivex.subjects.PublishSubject
-import ru.denale.podcastlistener.BuildConfig
+import ru.denale.podcastlistener.data.GenreResponse
 
 private const val LIMIT_SIZE = 20
 
 class CategoryViewModel(
     private val categoryRepository: CategoryRepository,
-    private val adMixer: AdvertisementMixer,
     private val advertisementRepository: AdvertisementRepository
 ) : MusicPlayerOnlineViewModel() {
 
@@ -31,6 +26,10 @@ class CategoryViewModel(
 
     fun setRowsCount(rows: Int) {
         this.rowsCount = rows
+    }
+
+    fun isAdvertisementAllowed() : Boolean {
+        return advertisementRepository.isAdvertisementAllowed()
     }
 
     fun loanNextNewsPart(totalItemsCount: Int) {
@@ -46,14 +45,9 @@ class CategoryViewModel(
     }
 
     private fun loadCategories(offset: Int) {
-        Single.zip(
-            getMainSource(offset),
-            getAdvertisementSource()
-        ) { authors: List<Genre>, advertisment: List<NativeAd> ->
-            adMixer.mixAdvertisement(authors, advertisment, rowsCount)
-        }.subscribe(object : MusicPlayerSignleObserver<List<Any>>(compositeDisposable) {
-            override fun onSuccess(t: List<Any>) {
-                categoryLiveData.onNext(t)
+        getMainSource(offset).subscribe(object : MusicPlayerSignleObserver<GenreResponse>(compositeDisposable) {
+            override fun onSuccess(t: GenreResponse) {
+                categoryLiveData.onNext(t.list)
             }
 
             override fun onError(e: Throwable) {
@@ -63,18 +57,12 @@ class CategoryViewModel(
         })
     }
 
-    private fun getMainSource(offset: Int): Single<List<Genre>> {
+    private fun getMainSource(offset: Int): Single<GenreResponse> {
         return categoryRepository.getCategories(offset, LIMIT_SIZE)
             .subscribeOn(Schedulers.io())
             .observeOn(AndroidSchedulers.mainThread())
             .doFinally {
                 progressbarLiveData.value = false
             }
-    }
-
-    private fun getAdvertisementSource(): Single<List<NativeAd>> {
-        return advertisementRepository.getNativeAdvList(8, BuildConfig.CATEGORY_AD_UNIT_ID)
-            //  .timeout(3000, TimeUnit.MILLISECONDS)
-            .onErrorReturnItem(emptyList())
     }
 }

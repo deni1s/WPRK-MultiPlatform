@@ -9,7 +9,6 @@ import ru.denale.podcastlistener.data.database.WholeMusicBdEntity
 import ru.denale.podcastlistener.data.database.toDomainModel
 import ru.denale.podcastlistener.data.database.toStorageModel
 import ru.denale.podcastlistener.data.repo.source.MusicDataSource
-import io.reactivex.Completable
 import io.reactivex.Single
 
 class MusicRepositoryImpl(
@@ -70,7 +69,7 @@ class MusicRepositoryImpl(
 
     override fun getLastSessionData(type: String): LastSessionData {
         return LastSessionData(
-            type = type,
+            waveId = type,
             podcastId = sharedPreferences.getString("podcastId$type", null),
             sharedPreferences.getInt("podcastTime$type", 0)
         )

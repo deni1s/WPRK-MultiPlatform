@@ -20,19 +20,19 @@ private const val BACKEND_URL = "https://podcast-listener.herokuapp.com/"
 
 interface ApiService {
     @GET("banners")
-    fun getBanners(@Query("gravity") gravity: String): Single<List<Banner>>
+    fun getBanners(@Query("gravity") gravity: String): Single<BannerResponse>
 
     @GET("genres")
-    fun getCategories(@Query("offset") offset: Int, @Query("limit") limit: Int): Single<List<Genre>>
+    fun getCategories(@Query("offset") offset: Int, @Query("limit") limit: Int): Single<GenreResponse>
 
     @GET("popular-genres")
-    fun getCategories(): Single<List<Genre>>
+    fun getCategories(): Single<GenreResponse>
 
     @GET("authors")
-    fun getAuthors(@Query("offset") offset: Int, @Query("limit") limit: Int): Single<List<Author>>
+    fun getAuthors(@Query("offset") offset: Int, @Query("limit") limit: Int): Single<AuthorResponse>
 
     @GET("popular-authors")
-    fun getAuthors(): Single<List<Author>>
+    fun getAuthors(): Single<AuthorResponse>
 
     @GET("podcasts")
     fun getMusics(

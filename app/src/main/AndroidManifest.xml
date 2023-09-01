@@ -51,25 +51,19 @@
                     android:pathPrefix="@string/deeplink_podcast_path"
                     android:scheme="@string/deeplink_scheme" />
             </intent-filter>
-        </activity>
-
-        <activity
-            android:name="ru.denale.podcastlistener.feature.activities.playmusic.PlayMusic"
-            android:exported="true"
-            android:screenOrientation="portrait">
             <intent-filter>
                 <action android:name="android.intent.action.VIEW" />
 
                 <category android:name="android.intent.category.DEFAULT" />
                 <category android:name="android.intent.category.BROWSABLE" />
 
-                <!-- Define your deep link URL here -->
                 <data
-                    android:host="@string/deeplink_path"
-                    android:pathPrefix="@string/deeplink_podcast_path"
-                    android:scheme="@string/deeplink_scheme" />
+                    android:scheme="http"
+                    android:host="dasuccess.ru"
+                    android:pathPattern="/podcast" />
             </intent-filter>
         </activity>
+
         <activity
             android:name="ru.denale.podcastlistener.feature.advertisment.InterstitialAdActivity"
             android:screenOrientation="portrait" />

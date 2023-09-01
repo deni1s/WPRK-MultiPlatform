@@ -1,9 +1,9 @@
 package ru.denale.podcastlistener.data.repo
 
-import ru.denale.podcastlistener.data.Author
 import io.reactivex.Single
+import ru.denale.podcastlistener.data.AuthorResponse
 
 interface AuthorRepository {
-    fun getAuthors(offset: Int, limit: Int):Single<List<Author>>
-    fun getAuthors():Single<List<Author>>
+    fun getAuthors(offset: Int, limit: Int): Single<AuthorResponse>
+    fun getAuthors(): Single<AuthorResponse>
 }

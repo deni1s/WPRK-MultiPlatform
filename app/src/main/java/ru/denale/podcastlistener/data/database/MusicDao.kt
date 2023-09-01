@@ -3,8 +3,6 @@ package ru.denale.podcastlistener.data.database
 import androidx.room.Dao
 import androidx.room.Insert
 import androidx.room.Query
-import ru.denale.podcastlistener.data.Music
-import io.reactivex.Flowable
 import io.reactivex.Single
 
 @Dao

@@ -1,13 +1,19 @@
 package ru.denale.podcastlistener.data
 
 import android.os.Parcelable
+import com.google.gson.annotations.SerializedName
 import kotlinx.android.parcel.Parcelize
 
 @Parcelize
 data class Author(
+    @SerializedName("id")
     val id: String,
+    @SerializedName("imageUrl")
     val imageUrl: String,
-    val name: String
+    @SerializedName("name")
+    val name: String,
+    @SerializedName("warningDescription")
+    val warningDescription: String?
 ):Parcelable
 
 

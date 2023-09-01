@@ -1,8 +1,8 @@
 package ru.denale.podcastlistener.data.repo.source
 
-import ru.denale.podcastlistener.data.Banner
 import io.reactivex.Single
+import ru.denale.podcastlistener.data.BannerResponse
 
 interface BannerDataSource {
-    fun getBanners(gravity: String):Single<List<Banner>>
+    fun getBanners(gravity: String):Single<BannerResponse>
 }

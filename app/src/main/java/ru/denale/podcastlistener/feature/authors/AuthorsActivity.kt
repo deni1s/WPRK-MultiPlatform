@@ -4,6 +4,11 @@ import android.content.Intent
 import android.os.Bundle
 import androidx.core.view.isVisible
 import androidx.recyclerview.widget.GridLayoutManager
+import com.yandex.mobile.ads.banner.BannerAdEventListener
+import com.yandex.mobile.ads.banner.BannerAdSize
+import com.yandex.mobile.ads.common.AdRequest
+import com.yandex.mobile.ads.common.AdRequestError
+import com.yandex.mobile.ads.common.ImpressionData
 import ru.denale.podcastlistener.R
 import ru.denale.podcastlistener.common.EXTRA_AUTHOR_ID_KEY_DATA
 import ru.denale.podcastlistener.common.MusicPlayerOnlineActivity
@@ -23,6 +28,7 @@ import kotlinx.android.synthetic.main.activity_category.textViewEmpty
 import kotlinx.android.synthetic.main.activity_musics.*
 import org.koin.android.ext.android.inject
 import org.koin.android.viewmodel.ext.android.viewModel
+import ru.denale.podcastlistener.BuildConfig
 
 
 class AuthorsActivity : MusicPlayerOnlineActivity(),AuthorsAdapter.OnClickAuthor {
@@ -34,7 +40,7 @@ class AuthorsActivity : MusicPlayerOnlineActivity(),AuthorsAdapter.OnClickAuthor
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_authors)
-
+        populateAdBanner()
         progress_all_authors_activity.isVisible = true
         recycle_category_all_activity.post {
             val sColumnWidth = 110
@@ -59,10 +65,12 @@ class AuthorsActivity : MusicPlayerOnlineActivity(),AuthorsAdapter.OnClickAuthor
 
         disposable = autorsViewModel.authorLiveData.observeOn(AndroidSchedulers.mainThread()).subscribe {
        //     val previousSize = authorsAdapter.authorsArray.size
-            authorsAdapter.authorsArray.addAll(it)
+            authorsAdapter.authorsArray.addAll(it.list)
             authorsAdapter.notifyDataSetChanged()
             textViewEmpty.isVisible = authorsAdapter.authorsArray.isEmpty()
             progress_all_authors_activity.isVisible = false
+            authors_screen_warning.isVisible = !it.warning.isNullOrEmpty()
+            authors_screen_warning.text = it.warning.orEmpty()
          //   authorsAdapter.notifyItemRangeChanged(previousSize, authorsAdapter.authorsArray.size)
         }
 
@@ -79,6 +87,44 @@ class AuthorsActivity : MusicPlayerOnlineActivity(),AuthorsAdapter.OnClickAuthor
 
         img_back_category.setOnClickListener {
             finish()
+        }
+    }
+
+    private fun populateAdBanner() {
+        if (autorsViewModel.isAdvertisementAllowed()) {
+            val size = BannerAdSize.stickySize(this, resources.displayMetrics.widthPixels)
+            authors_all_activity_banner.apply {
+                setAdSize(size)
+                setAdUnitId(BuildConfig.AUTHORS_AD_UNIT_ID)
+                setBannerAdEventListener(object : BannerAdEventListener {
+                    override fun onAdLoaded() {
+                        // If this callback occurs after the activity is destroyed, you
+                        // must call destroy and return or you may get a memory leak.
+                        // Note `isDestroyed` is a method on Activity.
+                        if (isDestroyed) {
+                            this@apply?.destroy()
+                            return
+                        }
+                    }
+
+                    override fun onAdFailedToLoad(adRequestError: AdRequestError) = Unit
+
+                    override fun onAdClicked() = Unit
+
+                    override fun onLeftApplication() = Unit
+
+                    override fun onReturnedToApplication() = Unit
+
+                    override fun onImpression(impressionData: ImpressionData?) = Unit
+                })
+                loadAd(
+                    AdRequest.Builder()
+                        // Methods in the AdRequest.Builder class can be used here to specify individual options settings.
+                        .build()
+                )
+            }
+        } else {
+            authors_all_activity_banner.isVisible = false
         }
     }
 

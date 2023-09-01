@@ -1,20 +1,33 @@
 package ru.denale.podcastlistener.data
 
 import android.os.Parcelable
+import com.google.gson.annotations.SerializedName
 import kotlinx.android.parcel.Parcelize
 
 @Parcelize
 data class Music(
+    @SerializedName("id")
     val id: String,
+    @SerializedName("title")
     val title: String,
+    @SerializedName("description")
     val description: String?,
+    @SerializedName("createdAt")
     val createdAt: String,
+    @SerializedName("author")
     val author: String,
+    @SerializedName("authorId")
     val authorId: String,
+    @SerializedName("genreId")
     val genreId: String,
+    @SerializedName("durationString")
     val durationString: String?,
+    @SerializedName("mediaUrl")
     val mediaUrl: String,
-    val imageUrl: String?
+    @SerializedName("imageUrl")
+    val imageUrl: String?,
+    @SerializedName("warningDescription")
+    val warningDescription: String?
 ):Parcelable
 
 

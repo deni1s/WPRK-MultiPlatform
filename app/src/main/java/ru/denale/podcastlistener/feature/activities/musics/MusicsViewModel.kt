@@ -4,31 +4,25 @@ import ru.denale.podcastlistener.common.EXTRA_AUTHOR_ID_KEY_DATA
 import ru.denale.podcastlistener.common.EXTRA_GENRE_ID_KEY_DATA
 import ru.denale.podcastlistener.common.MusicPlayerOnlineViewModel
 import ru.denale.podcastlistener.common.MusicPlayerSignleObserver
-import ru.denale.podcastlistener.data.Music
 import ru.denale.podcastlistener.data.repo.MusicRepository
 import android.os.Bundle
 import androidx.lifecycle.MutableLiveData
-import com.yandex.mobile.ads.nativeads.NativeAd
-import ru.denale.podcastlistener.data.AdvertisementMixer
-import ru.denale.podcastlistener.data.Author
 import ru.denale.podcastlistener.data.WaveResponse
 import ru.denale.podcastlistener.data.repo.AdvertisementRepository
 import io.reactivex.Single
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.schedulers.Schedulers
 import io.reactivex.subjects.PublishSubject
-import ru.denale.podcastlistener.BuildConfig
-import java.util.concurrent.TimeUnit
-
+import ru.denale.podcastlistener.data.AuthorResponse
 
 class MusicsViewModel(
     bundle: Bundle?,
     private val musicRepository: MusicRepository,
-    private val adMixer: AdvertisementMixer,
     private val advertisementRepository: AdvertisementRepository
 ) : MusicPlayerOnlineViewModel() {
 
     val musicLiveData = PublishSubject.create<List<Any>>()
+    val warningLiveData = PublishSubject.create<String>()
     val errorLiveData = PublishSubject.create<String>()
     val progressLiveData = MutableLiveData<Boolean>()
     private var authorId: String? = null
@@ -47,17 +41,13 @@ class MusicsViewModel(
     }
 
     private fun loadMusicByAuthor(authorId: String, offset: Int) {
-        Single.zip(
-            getAuthorsSource(authorId, offset),
-            getAdvertisementSource(offset)
-        ) { authors: WaveResponse, advertisment: List<NativeAd> ->
-            adMixer.simpleMix(authors.podcasts, advertisment, 6)
-        }
+        getAuthorsSource(authorId, offset)
             .subscribeOn(Schedulers.io())
             .observeOn(AndroidSchedulers.mainThread())
-            .subscribe(object : MusicPlayerSignleObserver<List<Any>>(compositeDisposable) {
-                override fun onSuccess(t: List<Any>) {
-                    musicLiveData.onNext(t)
+            .subscribe(object : MusicPlayerSignleObserver<WaveResponse>(compositeDisposable) {
+                override fun onSuccess(t: WaveResponse) {
+                    musicLiveData.onNext(t.podcasts)
+                    t.warning?.let { warningLiveData.onNext(it) }
                 }
 
                 override fun onError(e: Throwable) {
@@ -72,40 +62,24 @@ class MusicsViewModel(
     }
 
     private fun loadMusicByGenre(genreId: String?, offset: Int) {
-        Single.zip(
-            getGenreSource(genreId, offset),
-            getAdvertisementSource(offset)
-        ) { authors: WaveResponse, advertisment: List<NativeAd> ->
-            adMixer.simpleMix(authors.podcasts, advertisment, 3)
-        }
+        getGenreSource(genreId, offset)
             .subscribeOn(Schedulers.io())
             .observeOn(AndroidSchedulers.mainThread())
-            .subscribe(object : MusicPlayerSignleObserver<List<Any>>(compositeDisposable) {
-                override fun onSuccess(t: List<Any>) {
-                    musicLiveData.onNext(t)
+            .subscribe(object : MusicPlayerSignleObserver<WaveResponse>(compositeDisposable) {
+                override fun onSuccess(t: WaveResponse) {
+                    musicLiveData.onNext(t.podcasts)
+                    t.warning?.let { warningLiveData.onNext(it) }
                 }
 
                 override fun onError(e: Throwable) {
                     super.onError(e)
                     errorLiveData.onNext("Произошла ошибка")
-
                 }
             })
     }
 
-
     private fun getGenreSource(genreId: String?, offset: Int): Single<WaveResponse> {
         return musicRepository.getMusics(genreId, offset)
-    }
-
-    private fun getAdvertisementSource(offset: Int): Single<List<NativeAd>> {
-        return if (offset == 0) {
-            advertisementRepository.getHorizontalNativeAdvList(8, BuildConfig.MUSIC_LIST_AD_UNIT_ID)
-                .timeout(3000, TimeUnit.MILLISECONDS)
-                .onErrorReturnItem(emptyList())
-        } else {
-            Single.just(emptyList())
-        }
     }
 
     fun loanNextNewsPart(totalItemsCount: Int) {
@@ -114,5 +88,9 @@ class MusicsViewModel(
         } else {
             loadMusicByGenre(categoryId, totalItemsCount)
         }
+    }
+
+    fun isAdvertisementAllowed(): Boolean {
+        return advertisementRepository.isAdvertisementAllowed()
     }
 }

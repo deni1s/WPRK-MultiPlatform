@@ -15,7 +15,8 @@ fun List<MusicBdEntity>.toDomainModel(): List<Music> {
             genreId = entity.genreId,
             durationString = entity.durationString,
             mediaUrl = entity.mediaUrl,
-            imageUrl = entity.imageUrl
+            imageUrl = entity.imageUrl,
+            warningDescription = entity.warning
         )
     }
 }
@@ -35,7 +36,8 @@ fun List<Music>.toStorageModel(type: String, timeStamp: Long): List<MusicBdEntit
             imageUrl = entity.imageUrl,
             type = type,
             timestamp = timeStamp,
-            screenTitle = ""
+            screenTitle = "",
+            warning = entity.warningDescription
         )
     }
 }
@@ -56,7 +58,8 @@ fun WaveResponse.toStorageModel(type: String, timeStamp: Long): List<MusicBdEnti
             imageUrl = entity.imageUrl,
             type = type,
             timestamp = timeStamp,
-            screenTitle = screenTitle
+            screenTitle = screenTitle,
+            warning = entity.warningDescription
         )
     }
 }

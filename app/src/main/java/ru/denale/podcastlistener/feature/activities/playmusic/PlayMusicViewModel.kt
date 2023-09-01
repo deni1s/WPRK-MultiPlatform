@@ -11,10 +11,10 @@ import ru.denale.podcastlistener.data.WaveResponse
 import ru.denale.podcastlistener.data.repo.MusicRepository
 import ru.denale.podcastlistener.feature.home.ENTERANCE_COUNT
 import ru.denale.podcastlistener.feature.home.FIRST_ADD_ENTERANCE_COUNT
-import ru.denale.podcastlistener.feature.home.IS_ADVERTISEMENT_ALLOWED
 import io.reactivex.Single
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.schedulers.Schedulers
+import ru.denale.podcastlistener.data.repo.AdvertisementRepository
 import java.util.*
 
 private const val HOURS_IN_DAY = 24
@@ -24,6 +24,7 @@ private const val SINGLE_PODCAST_TITLE = "Подкаст"
 class PlayMusicViewModel(
     bundle: Bundle?,
     private val musicRepository: MusicRepository,
+    private val advertisementRepository: AdvertisementRepository,
     val sharedPreferences: SharedPreferences
 ) :
     MusicPlayerOnlineViewModel() {
@@ -70,7 +71,7 @@ class PlayMusicViewModel(
         val music = bundle?.getParcelable<Music>(EXTRA_MUSIC)
 
         var enterCount = sharedPreferences.getInt(ENTERANCE_COUNT, 0)
-        val isAdvAllowed = sharedPreferences.getBoolean(IS_ADVERTISEMENT_ALLOWED, true)
+        val isAdvAllowed = isAdvertisementAllowed()
         if (enterCount > FIRST_ADD_ENTERANCE_COUNT && isAdvAllowed) {
             isAdvertisementAvailableData.value = true
         } else {
@@ -85,12 +86,16 @@ class PlayMusicViewModel(
         } ?: type?.let { getTypeData(type) }
     }
 
-    fun getTypeData(type: String) {
-        musicRepository.getPreviousMusics(type).flatMap {
+    fun isAdvertisementAllowed(): Boolean {
+        return advertisementRepository.isAdvertisementAllowed()
+    }
+
+    fun getTypeData(id: String) {
+        musicRepository.getPreviousMusics(id).flatMap {
             if (shouldUpdateWave(it.time)) {
-                musicRepository.clearSessionData(type)
-                musicRepository.clearType(type)
-                musicRepository.getMusics(type, 0)
+                musicRepository.clearSessionData(id)
+                musicRepository.clearType(id)
+                musicRepository.getMusics(id, 0)
                     .doOnSuccess {
                         musicRepository.saveMusicList(
                             it,
@@ -98,7 +103,7 @@ class PlayMusicViewModel(
                         )
                     }
             } else {
-                Single.just(WaveResponse(podcasts = it.list, title = it.title, type = it.type))
+                Single.just(WaveResponse(podcasts = it.list, title = it.title, type = it.type, warning = null))
             }
         }
             .subscribeOn(Schedulers.io())
@@ -108,7 +113,7 @@ class PlayMusicViewModel(
             }
             .subscribe(object : MusicPlayerSignleObserver<WaveResponse>(compositeDisposable) {
                 override fun onSuccess(t: WaveResponse) {
-                    sessionLiveData.value = musicRepository.getLastSessionData(type)
+                    sessionLiveData.value = musicRepository.getLastSessionData(id)
                     musicLiveData.value = t.podcasts
                     titleLiveData.value = t.title ?: "Волна"
 //                    sharedPreferences.edit().putLong(type, Calendar.getInstance().timeInMillis)
