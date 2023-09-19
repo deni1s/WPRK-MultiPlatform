@@ -9,30 +9,31 @@ import android.content.ServiceConnection
 import android.content.pm.PackageManager
 import android.os.Bundle
 import android.os.IBinder
-import android.util.Log
+import android.view.ViewGroup
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.core.view.isVisible
 import com.google.android.material.slider.Slider
+import com.yandex.metrica.YandexMetrica
 import com.yandex.mobile.ads.banner.BannerAdEventListener
 import com.yandex.mobile.ads.banner.BannerAdSize
 import com.yandex.mobile.ads.banner.BannerAdView
 import com.yandex.mobile.ads.common.AdRequest
 import com.yandex.mobile.ads.common.AdRequestError
 import com.yandex.mobile.ads.common.ImpressionData
+import kotlinx.android.synthetic.main.activity_play_music.*
+import org.koin.android.ext.android.inject
+import org.koin.android.viewmodel.ext.android.viewModel
+import org.koin.core.parameter.parametersOf
+import ru.denale.podcastlistener.BuildConfig
 import ru.denale.podcastlistener.R
 import ru.denale.podcastlistener.common.SCREEN_PODCAST_ID_DATA
 import ru.denale.podcastlistener.common.convertMillisToString
 import ru.denale.podcastlistener.data.Music
 import ru.denale.podcastlistener.feature.advertisment.InterstitialAdActivity
 import ru.denale.podcastlistener.services.ImageLoadingService
-import kotlinx.android.synthetic.main.activity_play_music.*
-import org.koin.android.ext.android.inject
-import org.koin.android.viewmodel.ext.android.viewModel
-import org.koin.core.parameter.parametersOf
-import ru.denale.podcastlistener.BuildConfig
 import java.util.*
 import java.util.concurrent.TimeUnit
 
@@ -99,16 +100,25 @@ class PlayMusic1 : AppCompatActivity() {
                     is MediaServiceEvent.onMusicContinued -> {
                         btn_play_music.setImageResource(R.drawable.ic_pause)
                         runOnUiThread {
-                            slider.valueFrom = 0F
-                            slider.valueTo = state.duration.toFloat()
-                            slider.value = state.position.toFloat()
+                            try {
+                                slider.valueFrom = 0f
+                                slider.valueTo = state.duration.toFloat()
+                                slider.value = state.position.toFloat()
+                            } catch (e: Exception) {
+                                YandexMetrica.reportError("slider error 4", e.message)
+                            }
                             setTimer()
                         }
                     }
                     is MediaServiceEvent.onMusicLoading -> {
                         btn_play_music.isClickable = false
                         PlayProgress.show()
-                        slider.value = 0f
+                        try {
+                            slider.valueFrom = 0f
+                            slider.value = 0f
+                        } catch (e: Exception) {
+                        YandexMetrica.reportError("slider error 4", e.message)
+                     }
                         displayMusicInfo(
                             state.music,
                             state.isFirst,
@@ -129,9 +139,13 @@ class PlayMusic1 : AppCompatActivity() {
                                 state.isFirst,
                                 state.isLast
                             )
-                            slider.valueFrom = 0F
-                            slider.valueTo = state.duration.toFloat()
-                            slider.value = state.position.toFloat()
+                            try {
+                                slider.valueFrom = 0F
+                                slider.valueTo = state.duration.toFloat()
+                                slider.value = state.position.toFloat()
+                            }  catch (e: Exception) {
+                            YandexMetrica.reportError("slider error 4", e.message)
+                        }
                             if (state.isMusicInProgress) {
                                 btn_play_music.setImageResource(R.drawable.ic_pause)
                             } else {
@@ -359,9 +373,13 @@ class PlayMusic1 : AppCompatActivity() {
         timer?.schedule(object : TimerTask() {
             override fun run() {
                 runOnUiThread {
-                    val newValue = slider.value + 1000
-                    if (slider.valueTo > newValue) {
-                        slider.value = newValue
+                    try {
+                        val newValue = slider.value + 1000
+                        if (slider.valueTo > newValue) {
+                            slider.value = newValue
+                        }
+                    } catch (e: Exception) {
+                        YandexMetrica.reportError("slider error 1", e.message)
                     }
                 }
             }
@@ -370,10 +388,14 @@ class PlayMusic1 : AppCompatActivity() {
     }
 
     override fun onStop() {
-        super.onStop()
+        bannerAdView?.let { childView ->
+            (childView.parent as? ViewGroup)?.removeView(childView)
+        }
+        player_adv_banner.removeAllViews()
         bannerAdView?.destroy()
         bannerAdView?.setBannerAdEventListener(null)
         bannerAdView = null
+        super.onStop()
         timer?.cancel()
         timer = null
     }
@@ -441,13 +463,21 @@ class PlayMusic1 : AppCompatActivity() {
 
     private fun playPreviousMusic() {
         timer?.cancel()
-        slider.value = 0F
+        try {
+            slider.value = 0f
+        } catch (e: Exception) {
+            YandexMetrica.reportError("slider error 2", e.message)
+        }
         sendCommand(MediaActivityEvent.onPreviousRequeired)
     }
 
     private fun playNextMusic() {
         timer?.cancel()
-        slider.value = 0F
+        try {
+            slider.value = 0f
+        } catch (e: Exception) {
+            YandexMetrica.reportError("slider error 3", e.message)
+        }
         sendCommand(MediaActivityEvent.onNextRequeired)
     }
 //
@@ -517,7 +547,14 @@ class PlayMusic1 : AppCompatActivity() {
                             bannerAdView?.destroy()
                             return
                         } else {
-                            player_adv_banner.addView(bannerAdView)
+                            try {
+                                bannerAdView?.let { childView ->
+                                    (childView.parent as? ViewGroup)?.removeView(childView)
+                                }
+                                player_adv_banner.addView(bannerAdView)
+                            } catch (e: Exception) {
+                                YandexMetrica.reportError("PlayMusic1", e.message)
+                            }
                         }
                     }
 

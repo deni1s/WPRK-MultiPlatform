@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "924816982408",
+    "project_id": "da-success",
+    "storage_bucket": "da-success.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:924816982408:android:e4757ad592c51607bafa3d",
+        "android_client_info": {
+          "package_name": "ru.denale.podcastlistener"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyC-WV-N03rMqJTP9QUPe9D6884Q3N6eXGM"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

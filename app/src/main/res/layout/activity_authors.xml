@@ -36,6 +36,7 @@
         android:id="@+id/authors_screen_warning"
         android:layout_width="0dp"
         android:paddingHorizontal="8dp"
+        android:autoLink="web"
         android:visibility="gone"
         app:layout_constraintStart_toStartOf="parent"
         android:layout_marginStart="4dp"

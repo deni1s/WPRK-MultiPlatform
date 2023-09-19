@@ -105,6 +105,7 @@
         app:layout_constraintEnd_toEndOf="parent"
         android:layout_marginBottom="12dp"
         android:visibility="gone"
+        android:autoLink="web"
         app:layout_constraintBottom_toTopOf="@+id/control_panel"
         android:textColor="@color/white"
         android:textAppearance="?textAppearanceCaption"

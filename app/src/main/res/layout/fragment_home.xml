@@ -159,6 +159,7 @@
             <TextView
                 android:id="@+id/home_screen_authors_warning"
                 android:layout_width="match_parent"
+                android:autoLink="web"
                 android:visibility="gone"
                 android:paddingHorizontal="12dp"
                 android:textColor="@color/white"

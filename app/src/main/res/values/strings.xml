@@ -22,4 +22,6 @@
 
     <string name="notification_channel_name">Music Channel</string>
     <string name="notification_channel_description">Shows the currently playing music</string>
+    <string name="default_notification_channel_id">channel_7872</string>
+
 </resources>

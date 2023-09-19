@@ -47,6 +47,7 @@
             app:layout_constraintTop_toBottomOf="@id/category_toolbar"
             android:textColor="@color/white"
             android:visibility="gone"
+            android:autoLink="web"
             android:textAppearance="?textAppearanceCaption"
             android:layout_height="wrap_content"/>
 

@@ -3,21 +3,19 @@ package ru.denale.podcastlistener.feature.home
 import android.content.Context
 import android.content.Intent
 import android.os.Bundle
-import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.core.view.isVisible
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import com.yandex.metrica.YandexMetrica
 import com.yandex.mobile.ads.banner.BannerAdEventListener
 import com.yandex.mobile.ads.banner.BannerAdSize
 import com.yandex.mobile.ads.banner.BannerAdView
 import com.yandex.mobile.ads.common.AdRequest
 import com.yandex.mobile.ads.common.AdRequestError
 import com.yandex.mobile.ads.common.ImpressionData
-import kotlinx.android.synthetic.main.activity_category.category_all_activity_banner
-import kotlinx.android.synthetic.main.activity_play_music.player_adv_banner
 import ru.denale.podcastlistener.R
 import ru.denale.podcastlistener.common.*
 import ru.denale.podcastlistener.data.Author
@@ -162,7 +160,14 @@ class HomeFragment : MusicPlayerOnlineFragment(), MusicAdapter.SetOnClick,
                             bannerAdView?.destroy()
                             return
                         } else {
-                            main_screen_bottom_adv_banner.addView(bannerAdView)
+                            try {
+                                bannerAdView?.let { childView ->
+                                    (childView.parent as? ViewGroup)?.removeView(childView)
+                                }
+                                main_screen_bottom_adv_banner.addView(bannerAdView)
+                            } catch (e: Exception) {
+                                YandexMetrica.reportError("HomeFragmnetError", e.message)
+                            }
                         }
                     }
 
@@ -191,10 +196,14 @@ class HomeFragment : MusicPlayerOnlineFragment(), MusicAdapter.SetOnClick,
     }
 
     override fun onStop() {
-        super.onStop()
+        bannerAdView?.let { childView ->
+            (childView.parent as? ViewGroup)?.removeView(childView)
+        }
+        main_screen_bottom_adv_banner.removeAllViews()
         bannerAdView?.destroy()
         bannerAdView?.setBannerAdEventListener(null)
         bannerAdView = null
+        super.onStop()
     }
 
     fun dpToPx(context: Context, dp: Float): Int {
