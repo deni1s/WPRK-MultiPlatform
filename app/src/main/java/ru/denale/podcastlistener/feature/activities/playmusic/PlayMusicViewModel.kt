@@ -1,20 +1,17 @@
 package ru.denale.podcastlistener.feature.activities.playmusic
 
-import android.content.SharedPreferences
 import android.os.Bundle
-import android.util.Log
 import androidx.lifecycle.MutableLiveData
 import ru.denale.podcastlistener.LastSessionData
 import ru.denale.podcastlistener.common.*
 import ru.denale.podcastlistener.data.Music
 import ru.denale.podcastlistener.data.WaveResponse
 import ru.denale.podcastlistener.data.repo.MusicRepository
-import ru.denale.podcastlistener.feature.home.ENTERANCE_COUNT
-import ru.denale.podcastlistener.feature.home.FIRST_ADD_ENTERANCE_COUNT
 import io.reactivex.Single
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.schedulers.Schedulers
 import ru.denale.podcastlistener.data.repo.AdvertisementRepository
+import ru.denale.podcastlistener.services.PODCAST_ID_KEY
 import java.util.*
 
 private const val HOURS_IN_DAY = 24
@@ -24,66 +21,28 @@ private const val SINGLE_PODCAST_TITLE = "Подкаст"
 class PlayMusicViewModel(
     bundle: Bundle?,
     private val musicRepository: MusicRepository,
-    private val advertisementRepository: AdvertisementRepository,
-    val sharedPreferences: SharedPreferences
+    private val advertisementRepository: AdvertisementRepository
 ) :
     MusicPlayerOnlineViewModel() {
 
-    fun setTrackListened(genreId: String, authorId: String) {
-        compositeDisposable.add(
-            musicRepository.setTrackListened(genreId, authorId)
-                .subscribeOn(Schedulers.io())
-                .observeOn(AndroidSchedulers.mainThread())
-                .onErrorComplete().subscribe({
-                    Log.d("listenre", "setTrackListened: success")
-                }, {
-                    Log.d("listenre", "setTrackListened: failure")
-                })
-        )
-    }
-
-    fun markTrackSeen(podcastId: String) {
-        compositeDisposable.add(
-            musicRepository.markTrackSeen(podcastId)
-                .subscribeOn(Schedulers.io())
-                .observeOn(AndroidSchedulers.mainThread())
-                .onErrorComplete().subscribe({}, {})
-        )
-    }
-
-//    val musicLiveData = MutableLiveData<List<Music>>()
-//
-//    init {
-//        val podcast = bundle.getParcelable<Music>(EXTRA_KEY_DATA)!!
-//        musicLiveData.value = listOf(podcast)
-//    }
-
     val musicLiveData = MutableLiveData<List<Music>>()
     val sessionLiveData = MutableLiveData<LastSessionData>()
-    val typeLiveData = MutableLiveData<String>()
     val titleLiveData = MutableLiveData<String>()
     val isAdvertisementAvailableData = MutableLiveData<Boolean>()
 
     init {
-        // progressLiveData.value = true
-
         val type = bundle?.getString(EXTRA_MUSIC_TYPE)
         val music = bundle?.getParcelable<Music>(EXTRA_MUSIC)
+        val podcastId = bundle?.getString(PODCAST_ID_KEY)
 
-        var enterCount = sharedPreferences.getInt(ENTERANCE_COUNT, 0)
-        val isAdvAllowed = isAdvertisementAllowed()
-        if (enterCount > FIRST_ADD_ENTERANCE_COUNT && isAdvAllowed) {
-            isAdvertisementAvailableData.value = true
-        } else {
-            enterCount++
-            sharedPreferences.edit().putInt(ENTERANCE_COUNT, enterCount).apply()
-            isAdvertisementAvailableData.value = false
-        }
+        isAdvertisementAvailableData.value = isAdvertisementAllowed()
 
         music?.let {
             musicLiveData.value = listOf(it)
             titleLiveData.value = SINGLE_PODCAST_TITLE
-        } ?: type?.let { getTypeData(type) }
+        } ?: type?.let { getTypeData(type) } ?: podcastId?.let {
+            loadPodcastId(it)
+        }
     }
 
     fun isAdvertisementAllowed(): Boolean {

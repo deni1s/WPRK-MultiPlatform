@@ -29,9 +29,11 @@ import org.koin.android.viewmodel.ext.android.viewModel
 import org.koin.core.parameter.parametersOf
 import ru.denale.podcastlistener.BuildConfig
 import ru.denale.podcastlistener.R
+import ru.denale.podcastlistener.common.EXTRA_MUSIC_TYPE
 import ru.denale.podcastlistener.common.SCREEN_PODCAST_ID_DATA
 import ru.denale.podcastlistener.common.convertMillisToString
 import ru.denale.podcastlistener.data.Music
+import ru.denale.podcastlistener.feature.activities.musics.MusicsActivity
 import ru.denale.podcastlistener.feature.advertisment.InterstitialAdActivity
 import ru.denale.podcastlistener.services.ImageLoadingService
 import java.util.*
@@ -260,27 +262,27 @@ class PlayMusic1 : AppCompatActivity() {
             }
         }
 
-
         playMusicViewModel.titleLiveData.observe(this) {
             textViewPlayerTitle.text = it
         }
 
         playMusicViewModel.sessionLiveData.observe(this) {
             type = InitializationType.Type(it.waveId)
+            setMenuClickListener(it.waveId)
             podcastId = it.podcastId
             progress = it.progress
         }
 
-        img_share_podcast.setOnClickListener {
-            currentMusic?.let {
-                shareText(
-                    resources.getString(R.string.deeplink_scheme) + "://" + resources.getString(R.string.deeplink_path) + resources.getString(
-                        R.string.deeplink_podcast_path
-                    ) + "?" + SCREEN_PODCAST_ID_DATA + "=" + it.id
-                )
-            }
-
-        }
+//        img_share_podcast.setOnClickListener {
+//            currentMusic?.let {
+//                shareText(
+//                    resources.getString(R.string.deeplink_scheme) + "://" + resources.getString(R.string.deeplink_path) + resources.getString(
+//                        R.string.deeplink_podcast_path
+//                    ) + "?" + SCREEN_PODCAST_ID_DATA + "=" + it.id
+//                )
+//            }
+//
+//        }
 
         img_back_playMusic.setOnClickListener {
             finish()
@@ -326,6 +328,13 @@ class PlayMusic1 : AppCompatActivity() {
             btn_play_music.setImageResource(R.drawable.ic_play)
             playNextMusic()
         }
+    }
+
+    private fun setMenuClickListener(type: String) {
+        img_list_screen.isVisible = true
+        img_list_screen.setOnClickListener {  startActivity(Intent(this, MusicsActivity::class.java).apply {
+            putExtra(EXTRA_MUSIC_TYPE, type)
+        }) }
     }
 
     private fun shareText(text: String) {

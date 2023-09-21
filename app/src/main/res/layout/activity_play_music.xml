@@ -26,19 +26,19 @@
         android:layout_weight="1"
         android:gravity="center"
         android:textAppearance="?textAppearanceHeadline6"
-        app:layout_constraintEnd_toStartOf="@+id/img_share_podcast"
+        app:layout_constraintEnd_toStartOf="@+id/img_list_screen"
         app:layout_constraintHorizontal_bias="0.0"
         app:layout_constraintStart_toEndOf="@+id/img_back_playMusic"
         app:layout_constraintTop_toTopOf="parent" />
 
     <ImageView
-        android:id="@+id/img_share_podcast"
+        android:id="@+id/img_list_screen"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_gravity="center"
         android:padding="16dp"
         android:visibility="gone"
-        android:src="@drawable/ic_baseline_share_24"
+        android:src="@drawable/baseline_menu_24"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
 

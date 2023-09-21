@@ -13,7 +13,7 @@ import io.reactivex.Single
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.schedulers.Schedulers
 import io.reactivex.subjects.PublishSubject
-import ru.denale.podcastlistener.data.AuthorResponse
+import ru.denale.podcastlistener.common.EXTRA_MUSIC_TYPE
 
 class MusicsViewModel(
     bundle: Bundle?,
@@ -31,12 +31,15 @@ class MusicsViewModel(
     init {
         progressLiveData.value = true
 
+        val type = bundle?.getString(EXTRA_MUSIC_TYPE)
         authorId = bundle?.getString(EXTRA_AUTHOR_ID_KEY_DATA)
         categoryId = bundle?.getString(EXTRA_GENRE_ID_KEY_DATA)
         if (authorId != null) {
             loadMusicByAuthor(authorId!!, 0)
-        } else {
+        } else if (categoryId != null) {
             loadMusicByGenre(categoryId, 0)
+        } else {
+            getTypeData(type.orEmpty())
         }
     }
 
@@ -74,6 +77,27 @@ class MusicsViewModel(
                 override fun onError(e: Throwable) {
                     super.onError(e)
                     errorLiveData.onNext("Произошла ошибка")
+                }
+            })
+    }
+
+    fun getTypeData(id: String) {
+        musicRepository.getPreviousMusics(id).flatMap {
+            Single.just(WaveResponse(podcasts = it.list, title = it.title, type = it.type, warning = null))
+        }
+            .subscribeOn(Schedulers.io())
+            .observeOn(AndroidSchedulers.mainThread())
+            .doFinally {
+                // progressLiveData.value = false
+            }
+            .subscribe(object : MusicPlayerSignleObserver<WaveResponse>(compositeDisposable) {
+                override fun onSuccess(t: WaveResponse) {
+                    musicLiveData.onNext(t.podcasts)
+                    t.warning?.let { warningLiveData.onNext(it) }
+                }
+
+                override fun onError(e: Throwable) {
+                    super.onError(e)
                 }
             })
     }

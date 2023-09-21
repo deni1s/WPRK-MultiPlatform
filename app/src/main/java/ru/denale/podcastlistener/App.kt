@@ -84,7 +84,7 @@ class App : Application() {
             viewModel { AuthorsViewModel(get(), get()) }
             viewModel { CategoryViewModel(get(), get()) }
             viewModel { (bundle: Bundle?) -> MusicsViewModel(bundle, get(), get()) }
-            viewModel { (bundle: Bundle?) -> PlayMusicViewModel(bundle, get(), get(), get()) }
+            viewModel { (bundle: Bundle?) -> PlayMusicViewModel(bundle, get(), get()) }
         }
 
         startKoin {
