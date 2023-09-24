@@ -27,11 +27,12 @@ class MusicsViewModel(
     val progressLiveData = MutableLiveData<Boolean>()
     private var authorId: String? = null
     private var categoryId: String? = null
+    var type: String? = null
 
     init {
         progressLiveData.value = true
 
-        val type = bundle?.getString(EXTRA_MUSIC_TYPE)
+        type = bundle?.getString(EXTRA_MUSIC_TYPE)
         authorId = bundle?.getString(EXTRA_AUTHOR_ID_KEY_DATA)
         categoryId = bundle?.getString(EXTRA_GENRE_ID_KEY_DATA)
         if (authorId != null) {

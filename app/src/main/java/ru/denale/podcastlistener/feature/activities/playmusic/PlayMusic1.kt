@@ -1,6 +1,7 @@
 package ru.denale.podcastlistener.feature.activities.playmusic
 
 import android.Manifest.permission.POST_NOTIFICATIONS
+import android.app.Activity
 import android.app.ActivityManager
 import android.content.ComponentName
 import android.content.Context
@@ -11,6 +12,8 @@ import android.os.Bundle
 import android.os.IBinder
 import android.view.ViewGroup
 import android.widget.Toast
+import androidx.activity.result.ActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
@@ -29,6 +32,7 @@ import org.koin.android.viewmodel.ext.android.viewModel
 import org.koin.core.parameter.parametersOf
 import ru.denale.podcastlistener.BuildConfig
 import ru.denale.podcastlistener.R
+import ru.denale.podcastlistener.common.EXTRA_MUSIC
 import ru.denale.podcastlistener.common.EXTRA_MUSIC_TYPE
 import ru.denale.podcastlistener.common.SCREEN_PODCAST_ID_DATA
 import ru.denale.podcastlistener.common.convertMillisToString
@@ -63,6 +67,15 @@ class PlayMusic1 : AppCompatActivity() {
     private var progress: Int? = null
     private var command: String = INITIALIZATION_COMMAND
     private var bannerAdView: BannerAdView? = null
+    private var startForResult = registerForActivityResult(
+        ActivityResultContracts.StartActivityForResult()
+    ) { result: ActivityResult ->
+        if (result.resultCode == Activity.RESULT_OK) {
+            result.data?.extras?.getParcelable<Music>(EXTRA_MUSIC)?.let {
+                sendCommand(MediaActivityEvent.onMusicRequeired(it))
+            }
+        }
+    }
 
     private val connection = object : ServiceConnection {
         override fun onServiceConnected(name: ComponentName?, service: IBinder?) {
@@ -95,10 +108,12 @@ class PlayMusic1 : AppCompatActivity() {
                         timer?.cancel()
                         btn_play_music.setImageResource(R.drawable.ic_play)
                     }
+
                     is MediaServiceEvent.onMusicPaused -> {
                         timer?.cancel()
                         btn_play_music.setImageResource(R.drawable.ic_play)
                     }
+
                     is MediaServiceEvent.onMusicContinued -> {
                         btn_play_music.setImageResource(R.drawable.ic_pause)
                         runOnUiThread {
@@ -112,6 +127,7 @@ class PlayMusic1 : AppCompatActivity() {
                             setTimer()
                         }
                     }
+
                     is MediaServiceEvent.onMusicLoading -> {
                         btn_play_music.isClickable = false
                         PlayProgress.show()
@@ -119,14 +135,15 @@ class PlayMusic1 : AppCompatActivity() {
                             slider.valueFrom = 0f
                             slider.value = 0f
                         } catch (e: Exception) {
-                        YandexMetrica.reportError("slider error 4", e.message)
-                     }
+                            YandexMetrica.reportError("slider error 4", e.message)
+                        }
                         displayMusicInfo(
                             state.music,
                             state.isFirst,
                             state.isLast
                         )
                     }
+
                     is MediaServiceEvent.onMusicDisplay -> {
                         displayMusicInfo(
                             state.music,
@@ -134,6 +151,7 @@ class PlayMusic1 : AppCompatActivity() {
                             state.isLast
                         )
                     }
+
                     is MediaServiceEvent.onDataUpdate -> {
                         runOnUiThread {
                             displayMusicInfo(
@@ -145,9 +163,9 @@ class PlayMusic1 : AppCompatActivity() {
                                 slider.valueFrom = 0F
                                 slider.valueTo = state.duration.toFloat()
                                 slider.value = state.position.toFloat()
-                            }  catch (e: Exception) {
-                            YandexMetrica.reportError("slider error 4", e.message)
-                        }
+                            } catch (e: Exception) {
+                                YandexMetrica.reportError("slider error 4", e.message)
+                            }
                             if (state.isMusicInProgress) {
                                 btn_play_music.setImageResource(R.drawable.ic_pause)
                             } else {
@@ -160,6 +178,7 @@ class PlayMusic1 : AppCompatActivity() {
                             }
                         }
                     }
+
                     null -> {}
                 }
             }
@@ -217,28 +236,8 @@ class PlayMusic1 : AppCompatActivity() {
                 initializeService(INITIALIZATION_WITH_PREVIOUS_COMMAND)
                 wasServiceInitialized = true
             }
-            //   stopService(getCurrentRunningServiceIntent("ru.denale.podcastlistener"))
         }
-//            val serviceIntent = getCurrentRunningServiceIntent("ru.denale.podcastlistener")
-//            if (serviceIntent != null) {
-//               // initializeService()
-//                wasServiceInitialized = true
-//                bindService(
-//                    serviceIntent,
-//                    connection,
-//                    Context.BIND_AUTO_CREATE or Context.BIND_ADJUST_WITH_ACTIVITY
-//                )
-//            }
-
-
-        // musicPlayerServiceIntent = Intent(this, MusicPlayerService::class.java)
-
         playMusicViewModel.musicLiveData.observe(this) { list ->
-            //sendCommand(MediaActivityEvent.onMusicFetched(list))
-            //    musicPlayerServiceIntent?.putParcelableArrayListExtra("musicList", ArrayList(list))
-//            btn_skip_next.isVisible = list.size > 1
-//            btn_skip_previous.isVisible = false
-            //  list.firstOrNull()?.let { displayMusicInfo(it, true, list.size <= 1) }
             initializeService(INITIALIZATION_COMMAND)
             musicList = list
             sendCommand(
@@ -272,18 +271,6 @@ class PlayMusic1 : AppCompatActivity() {
             podcastId = it.podcastId
             progress = it.progress
         }
-
-//        img_share_podcast.setOnClickListener {
-//            currentMusic?.let {
-//                shareText(
-//                    resources.getString(R.string.deeplink_scheme) + "://" + resources.getString(R.string.deeplink_path) + resources.getString(
-//                        R.string.deeplink_podcast_path
-//                    ) + "?" + SCREEN_PODCAST_ID_DATA + "=" + it.id
-//                )
-//            }
-//
-//        }
-
         img_back_playMusic.setOnClickListener {
             finish()
         }
@@ -306,7 +293,6 @@ class PlayMusic1 : AppCompatActivity() {
             })
 
         btn_play_music.setOnClickListener {
-            //   startMusicPlayerService()
             if (isAdvertisementAvialable && !advWasShown) {
                 isAdvertisementDisplaying = true
                 startActivityForResult(
@@ -332,9 +318,11 @@ class PlayMusic1 : AppCompatActivity() {
 
     private fun setMenuClickListener(type: String) {
         img_list_screen.isVisible = true
-        img_list_screen.setOnClickListener {  startActivity(Intent(this, MusicsActivity::class.java).apply {
-            putExtra(EXTRA_MUSIC_TYPE, type)
-        }) }
+        img_list_screen.setOnClickListener {
+            startForResult.launch(Intent(this, MusicsActivity::class.java).apply {
+                putExtra(EXTRA_MUSIC_TYPE, type)
+            })
+        }
     }
 
     private fun shareText(text: String) {
@@ -489,10 +477,6 @@ class PlayMusic1 : AppCompatActivity() {
         }
         sendCommand(MediaActivityEvent.onNextRequeired)
     }
-//
-//    private fun startMusicPlayerService() {
-//        ContextCompat.startForegroundService(this, musicPlayerServiceIntent!!)
-//    }
 
     private fun isMyServiceRunning(serviceClass: Class<*>): Boolean {
         val manager = getSystemService(ACTIVITY_SERVICE) as ActivityManager
@@ -538,7 +522,10 @@ class PlayMusic1 : AppCompatActivity() {
     private fun populateAdBanner() {
         if (playMusicViewModel.isAdvertisementAllowed()) {
             bannerAdView = BannerAdView(this)
-            val size = BannerAdSize.stickySize(this.applicationContext, resources.displayMetrics.widthPixels)
+            val size = BannerAdSize.stickySize(
+                this.applicationContext,
+                resources.displayMetrics.widthPixels
+            )
             player_adv_banner.layoutParams = player_adv_banner.layoutParams.apply {
                 height = dpToPx(this@PlayMusic1, size.height.toFloat())
             }

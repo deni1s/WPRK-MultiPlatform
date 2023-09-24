@@ -239,7 +239,6 @@ class MusicPlayerService : Service() {
             .setContentTitle("Медиаплеер")
             .setSmallIcon(R.drawable.default_image)
             //  .setPriority(NotificationCompat.PRIORITY_DEFAULT)
-            //  .setPriority(NotificationCompat.PRIORITY_DEFAULT)
             .setVibrate(null)
             .setVibrate(longArrayOf(0L))
             .setSilent(true)
@@ -247,44 +246,6 @@ class MusicPlayerService : Service() {
     }
 
     override fun onStartCommand(intent: Intent, flags: Int, startId: Int): Int {
-//        val event: MediaActivityEvent? = intent.getParcelableExtra("activityEvent")
-//        when (event) {
-//            is MediaActivityEvent.onPauseRequeired -> {
-//                if (musicList.isNotEmpty()) {
-//                    pauseMusic()
-//                }
-//            }
-//            is MediaActivityEvent.onPlayRequired -> {
-//                if (musicList.isNotEmpty()) {
-//                    val music = musicList[musicPosition]
-//                    startForeground(NOTIFICATION_ID, createNotification(music))
-//                    playMusic(music)
-//                }
-//            }
-//            is MediaActivityEvent.onMusicSeeked -> seekMusic(event.progress)
-//            is MediaActivityEvent.onAdvertisementFinised -> {
-//                isAdvertisementFinised = true
-//                if (isFirstPlayerInitializationReady) {
-//                    sendMessageToActivity(
-//                        MediaServiceEvent.onMusicStarted(
-//                            mediaPlayer?.duration?.toLong() ?: 0L
-//                        )
-//                    )
-//                    mediaPlayer?.start()
-//                }
-//            }
-//            is MediaActivityEvent.onAdvertisementInfoAvailable -> {
-//                isAdvertisementAvialable = event.isAdvertisementAvailable
-//                if (!isAdvertisementAvialable) {
-//                    isAdvertisementFinised = true
-//                }
-//            }
-//            is MediaActivityEvent.onNextRequeired -> playNextMusic()
-//            is MediaActivityEvent.onPreviousRequeired -> playPreviousMusic()
-//            null -> {}
-//            is MediaActivityEvent.onMusicFetched -> musicList = event.list
-//        }
-
         when (intent.action) {
             MediaActivityEvent.onNextRequeired.toString() -> {
                 if (isAdvertisementFinised) {
@@ -366,12 +327,6 @@ class MusicPlayerService : Service() {
                         )
                     )
                     updateNotification(createNotification(it))
-//                    if (mediaPlayer?.isPlaying == true)
-//                        sendMessageToActivity(
-//                            MediaServiceEvent.onMusicContinued(
-//                                mediaPlayer?.currentPosition ?: 0
-//                            )
-//                        )
                 } ?: updateNotification(createDefaultNotification())
             }
         }
@@ -533,9 +488,6 @@ class MusicPlayerService : Service() {
 
     private fun sendMessageToActivity(event: MediaServiceEvent) {
         eventState.value = event
-//        val intent = Intent("MediaPlayerIntent")
-//        intent.putExtra("data", event)
-//        LocalBroadcastManager.getInstance(applicationContext).sendBroadcast(intent)
     }
 
     private fun pauseMusic() {
@@ -630,14 +582,7 @@ class MusicPlayerService : Service() {
                     updateNotification(createNotification(musicList[musicPosition]))
                 }
             }
-//            is MediaActivityEvent.onAdvertisementInfoAvailable -> {
-//                isAdvertisementAvialable = event.isAdvertisementAvailable
-//                if (!isAdvertisementAvialable) {
-//                    isAdvertisementFinised = true
-//                }
-//            }
             is MediaActivityEvent.onNewDataRequired -> {
-                // if (mediaPlayer?.isPlaying == true) {
                 if (musicList.isEmpty()) return
                 val music = musicList[musicPosition]
                 checkSetListening(music.authorId, music.genreId)
@@ -652,7 +597,6 @@ class MusicPlayerService : Service() {
                         isMusicInProgress = mediaPlayer?.isPlaying == true
                     )
                 )
-                // }
             }
 
             is MediaActivityEvent.onNextRequeired -> playNextMusic(mediaPlayer?.isPlaying == true)
@@ -692,7 +636,36 @@ class MusicPlayerService : Service() {
                     }
                 }
             }
-            //    is MediaActivityEvent.onMusicFetched -> musicList = event.list
+
+            is MediaActivityEvent.onMusicRequeired -> {
+                musicPosition = musicList.indexOfFirst { it == event.music }
+                updateNotification(createNotification(event.music))
+                sendMessageToActivity(
+                    MediaServiceEvent.onDataUpdate(
+                        duration = 1,
+                        position = 0,
+                        music = event.music,
+                        isLast = musicList.lastIndex == musicPosition,
+                        isFirst = musicPosition == 0,
+                        isMusicInProgress = mediaPlayer?.isPlaying == true
+                    )
+                )
+                if (mediaPlayer?.isPlaying == true) {
+                    sendMessageToActivity(MediaServiceEvent.onMusicPaused)
+                    sendMessageToActivity(
+                        MediaServiceEvent.onMusicLoading(
+                            music = event.music,
+                            isLast = musicList.lastIndex == musicPosition,
+                            isFirst = musicPosition == 0
+                        )
+                    )
+                    mediaPlayer?.stop()
+                    mediaPlayer?.release()
+                    // timer?.cancel()
+                    mediaPlayer = null
+                    playMusic(event.music)
+                }
+            }
             null -> {}
         }
 

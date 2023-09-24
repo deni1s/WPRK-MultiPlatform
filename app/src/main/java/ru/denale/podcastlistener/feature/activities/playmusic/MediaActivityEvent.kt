@@ -1,8 +1,6 @@
 package ru.denale.podcastlistener.feature.activities.playmusic
 
-import android.os.Parcelable
 import ru.denale.podcastlistener.data.Music
-import kotlinx.android.parcel.Parcelize
 
 sealed class MediaActivityEvent  {
 
@@ -23,6 +21,7 @@ sealed class MediaActivityEvent  {
     object onPreviousRequeired : MediaActivityEvent()
 
     object onAdvertisementFinised : MediaActivityEvent()
+    data class onMusicRequeired(val music: Music) : MediaActivityEvent()
 
 //    @Parcelize
 //    data class onAdvertisementInfoAvailable(val isAdvertisementAvailable: Boolean): MediaActivityEvent()

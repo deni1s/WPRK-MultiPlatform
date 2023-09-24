@@ -19,7 +19,6 @@ import ru.denale.podcastlistener.common.EXTRA_MUSIC
 import ru.denale.podcastlistener.common.SCREEN_TITLE_DATA
 import ru.denale.podcastlistener.feature.activities.playmusic.PlayMusic1
 import io.reactivex.disposables.Disposable
-import kotlinx.android.synthetic.main.activity_category.category_all_activity_banner
 import kotlinx.android.synthetic.main.activity_musics.*
 import org.koin.android.ext.android.inject
 import org.koin.android.viewmodel.ext.android.viewModel
@@ -77,9 +76,14 @@ class MusicsActivity : MusicPlayerOnlineActivity(), MusicAdapter.SetOnClick {
     }
 
     override fun onClick(music: Music) {
-        startActivity(Intent(this, PlayMusic1::class.java).apply {
-            putExtra(EXTRA_MUSIC, music)
-        })
+        val intent  = Intent(this, PlayMusic1::class.java)
+        intent.putExtra(EXTRA_MUSIC, music)
+        if (musicsViewModel.type != null) {
+            setResult(RESULT_OK, intent)
+            finish()
+        } else {
+            startActivity(intent)
+        }
     }
 
     private fun populateAdBanner() {
