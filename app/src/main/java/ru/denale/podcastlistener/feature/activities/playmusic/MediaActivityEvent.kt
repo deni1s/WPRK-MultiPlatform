@@ -20,7 +20,6 @@ sealed class MediaActivityEvent  {
 
     object onPreviousRequeired : MediaActivityEvent()
 
-    object onAdvertisementFinised : MediaActivityEvent()
     data class onMusicRequeired(val music: Music) : MediaActivityEvent()
 
 //    @Parcelize

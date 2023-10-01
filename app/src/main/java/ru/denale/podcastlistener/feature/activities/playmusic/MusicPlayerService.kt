@@ -48,8 +48,6 @@ class MusicPlayerService : Service() {
 
     private var wasDragged = false
     private var isNotified = false
-    private var isAdvertisementAvialable = true
-    private var isAdvertisementFinised = false
     private var isFirstPlayerInitializationReady = false
     private lateinit var notificationManager: NotificationManagerCompat
 
@@ -248,26 +246,20 @@ class MusicPlayerService : Service() {
     override fun onStartCommand(intent: Intent, flags: Int, startId: Int): Int {
         when (intent.action) {
             MediaActivityEvent.onNextRequeired.toString() -> {
-                if (isAdvertisementFinised) {
-                    playNextMusic(true)
-                    updateNotification(createNotification(musicList[musicPosition]))
-                }
+                playNextMusic(true)
+                updateNotification(createNotification(musicList[musicPosition]))
             }
 
             MediaActivityEvent.onPreviousRequeired.toString() -> {
-                if (isAdvertisementFinised) {
-                    playPreviousMusic(true)
-                    updateNotification(createNotification(musicList[musicPosition]))
-                }
+                playPreviousMusic(true)
+                updateNotification(createNotification(musicList[musicPosition]))
             }
 
             MediaActivityEvent.onPlayRequired.toString() -> {
-                if (isAdvertisementFinised) {
-                    processAction(MediaActivityEvent.onPlayRequired)
-                    updateNotification(createNotification(musicList[musicPosition]))
-                    if (mediaPlayer?.isPlaying != true && !isBound) {
-                        stopForeground(false)
-                    }
+                processAction(MediaActivityEvent.onPlayRequired)
+                updateNotification(createNotification(musicList[musicPosition]))
+                if (mediaPlayer?.isPlaying != true && !isBound) {
+                    stopForeground(false)
                 }
             }
 
@@ -438,14 +430,11 @@ class MusicPlayerService : Service() {
         mediaPlayer?.prepareAsync()
 
         mediaPlayer?.setOnPreparedListener { player ->
-            isFirstPlayerInitializationReady = true
             markTrackSeen(music.id)
 
-            if (isAdvertisementFinised) {
-                player.start()
-                updateNotification(createNotification(music))
-                sendMessageToActivity(MediaServiceEvent.onMusicStarted(player.duration.toLong()))
-            }
+            player.start()
+            updateNotification(createNotification(music))
+            sendMessageToActivity(MediaServiceEvent.onMusicStarted(player.duration.toLong()))
         }
         mediaPlayer?.setOnCompletionListener {
             mediaPlayer?.setOnPreparedListener(null)
@@ -570,18 +559,7 @@ class MusicPlayerService : Service() {
             }
 
             is MediaActivityEvent.onMusicSeeked -> seekMusic(event.progress)
-            is MediaActivityEvent.onAdvertisementFinised -> {
-                isAdvertisementFinised = true
-                if (isFirstPlayerInitializationReady) {
-                    sendMessageToActivity(
-                        MediaServiceEvent.onMusicStarted(
-                            mediaPlayer?.duration?.toLong() ?: 0L
-                        )
-                    )
-                    mediaPlayer?.start()
-                    updateNotification(createNotification(musicList[musicPosition]))
-                }
-            }
+
             is MediaActivityEvent.onNewDataRequired -> {
                 if (musicList.isEmpty()) return
                 val music = musicList[musicPosition]
@@ -617,10 +595,6 @@ class MusicPlayerService : Service() {
                         }
                     }
 
-                    isAdvertisementAvialable = event.isAdvertisementAvailable
-                    if (!isAdvertisementAvialable) {
-                        isAdvertisementFinised = true
-                    }
                     musicList.getOrNull(musicPosition)?.let {
                         updateNotification(createNotification(it))
                         sendMessageToActivity(
@@ -666,6 +640,7 @@ class MusicPlayerService : Service() {
                     playMusic(event.music)
                 }
             }
+
             null -> {}
         }
 
@@ -694,10 +669,6 @@ class MusicPlayerService : Service() {
     inner class PlayerEventBinder(
         val state: LiveData<MediaServiceEvent>
     ) : Binder() {
-
-        fun provideAdvertisementInfo(isAdvertisementAvailable: Boolean) {
-            this@MusicPlayerService.isAdvertisementAvialable = isAdvertisementAvailable
-        }
 
         fun processEvent(event: MediaActivityEvent) {
             processAction(event)

@@ -57,10 +57,8 @@ class PlayMusic1 : AppCompatActivity() {
     private var isDragging: Boolean = false
     private var timer: Timer? = null
     private var isAdvertisementAvialable = true
-    private var advWasShown = false
     private var playerBinder: MusicPlayerService.PlayerEventBinder? = null
     private var wasServiceInitialized = false
-    private var isAdvertisementDisplaying = false
     private var musicList: List<Music> = emptyList()
     private var type: InitializationType? = null
     private var podcastId: String? = null
@@ -224,7 +222,6 @@ class PlayMusic1 : AppCompatActivity() {
         } ?: intent.action?.let {
             command = it
             if (isMyServiceRunning(MusicPlayerService::class.java)) {
-                advWasShown = true
                 initializeService(intent.action.orEmpty())
                 wasServiceInitialized = true
             } else {
@@ -232,7 +229,6 @@ class PlayMusic1 : AppCompatActivity() {
             }
         } ?: if (savedInstanceState == null) {
             if (isMyServiceRunning(MusicPlayerService::class.java)) {
-                advWasShown = true
                 initializeService(INITIALIZATION_WITH_PREVIOUS_COMMAND)
                 wasServiceInitialized = true
             }
@@ -256,9 +252,6 @@ class PlayMusic1 : AppCompatActivity() {
 
         playMusicViewModel.isAdvertisementAvailableData.observe(this) {
             isAdvertisementAvialable = it
-            if (!isAdvertisementAvialable) {
-                advWasShown = true
-            }
         }
 
         playMusicViewModel.titleLiveData.observe(this) {
@@ -293,18 +286,8 @@ class PlayMusic1 : AppCompatActivity() {
             })
 
         btn_play_music.setOnClickListener {
-            if (isAdvertisementAvialable && !advWasShown) {
-                isAdvertisementDisplaying = true
-                startActivityForResult(
-                    Intent(this, InterstitialAdActivity::class.java),
-                    ADVERTISMENET_CODE,
-                    null
-                )
-            }
             timer?.cancel()
             sendCommand(MediaActivityEvent.onPlayRequired)
-
-            advWasShown = true
         }
         btn_skip_previous.setOnClickListener {
             btn_play_music.setImageResource(R.drawable.ic_play)
@@ -330,14 +313,6 @@ class PlayMusic1 : AppCompatActivity() {
         intent.type = "text/plain"
         intent.putExtra(Intent.EXTRA_TEXT, text)
         startActivity(Intent.createChooser(intent, "Поделиться через"))
-    }
-
-    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
-        super.onActivityResult(requestCode, resultCode, data)
-        if (requestCode == ADVERTISMENET_CODE) {
-            advWasShown = true
-            sendCommand(MediaActivityEvent.onAdvertisementFinised)
-        }
     }
 
     private fun showMusicError() {
@@ -400,10 +375,9 @@ class PlayMusic1 : AppCompatActivity() {
     override fun onStart() {
         super.onStart()
         populateAdBanner()
-        if (wasServiceInitialized && !isAdvertisementDisplaying) {
+        if (wasServiceInitialized) {
             sendCommand(MediaActivityEvent.onNewDataRequired)
         }
-        isAdvertisementDisplaying = false
     }
 
     private fun getCurrentRunningServiceIntent(packageName: String): Intent? {
