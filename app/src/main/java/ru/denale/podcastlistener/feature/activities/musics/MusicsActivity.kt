@@ -1,5 +1,6 @@
 package ru.denale.podcastlistener.feature.activities.musics
 
+import android.content.Context
 import ru.denale.podcastlistener.R
 import ru.denale.podcastlistener.common.MusicPlayerOnlineActivity
 import ru.denale.podcastlistener.data.Music
@@ -7,11 +8,14 @@ import ru.denale.podcastlistener.feature.adapter.EndlessScroll
 import ru.denale.podcastlistener.feature.adapter.MusicAdapter
 import android.content.Intent
 import android.os.Bundle
+import android.view.ViewGroup
 import androidx.core.view.isVisible
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import com.yandex.metrica.YandexMetrica
 import com.yandex.mobile.ads.banner.BannerAdEventListener
 import com.yandex.mobile.ads.banner.BannerAdSize
+import com.yandex.mobile.ads.banner.BannerAdView
 import com.yandex.mobile.ads.common.AdRequest
 import com.yandex.mobile.ads.common.AdRequestError
 import com.yandex.mobile.ads.common.ImpressionData
@@ -19,6 +23,8 @@ import ru.denale.podcastlistener.common.EXTRA_MUSIC
 import ru.denale.podcastlistener.common.SCREEN_TITLE_DATA
 import ru.denale.podcastlistener.feature.activities.playmusic.PlayMusic1
 import io.reactivex.disposables.Disposable
+import kotlinx.android.synthetic.main.activity_authors.authors_all_activity_banner
+import kotlinx.android.synthetic.main.activity_category.category_all_activity_banner
 import kotlinx.android.synthetic.main.activity_musics.*
 import org.koin.android.ext.android.inject
 import org.koin.android.viewmodel.ext.android.viewModel
@@ -29,6 +35,7 @@ class MusicsActivity : MusicPlayerOnlineActivity(), MusicAdapter.SetOnClick {
     val musicAdapter: MusicAdapter by inject()
     val musicsViewModel: MusicsViewModel by viewModel { parametersOf(intent.extras) }
     private var disposable: MutableList<Disposable> = mutableListOf()
+    private var bannerAdView: BannerAdView? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -75,6 +82,22 @@ class MusicsActivity : MusicPlayerOnlineActivity(), MusicAdapter.SetOnClick {
         }
     }
 
+    override fun onRestart() {
+        super.onRestart()
+        populateAdBanner()
+    }
+
+    override fun onStop() {
+        bannerAdView?.let { childView ->
+            (childView.parent as? ViewGroup)?.removeView(childView)
+        }
+        music_list_adv_banner.removeAllViews()
+        bannerAdView?.destroy()
+        bannerAdView?.setBannerAdEventListener(null)
+        bannerAdView = null
+        super.onStop()
+    }
+
     override fun onClick(music: Music) {
         val intent  = Intent(this, PlayMusic1::class.java)
         intent.putExtra(EXTRA_MUSIC, music)
@@ -88,18 +111,36 @@ class MusicsActivity : MusicPlayerOnlineActivity(), MusicAdapter.SetOnClick {
 
     private fun populateAdBanner() {
         if (musicsViewModel.isAdvertisementAllowed()) {
-            val size = BannerAdSize.stickySize(this, resources.displayMetrics.widthPixels)
-            music_list_adv_banner.apply {
+            bannerAdView = BannerAdView(this)
+            val size = BannerAdSize.stickySize(
+                this.applicationContext,
+                resources.displayMetrics.widthPixels
+            )
+            music_list_adv_banner.layoutParams = music_list_adv_banner.layoutParams.apply {
+                height = dpToPx(this@MusicsActivity, size.height.toFloat())
+            }
+            bannerAdView?.apply {
+                bannerAdView = this
                 setAdSize(size)
-                setAdUnitId(BuildConfig.MUSIC_LIST_AD_UNIT_ID)
+                setAdUnitId(BuildConfig.AUTHORS_AD_UNIT_ID)
                 setBannerAdEventListener(object : BannerAdEventListener {
                     override fun onAdLoaded() {
                         // If this callback occurs after the activity is destroyed, you
                         // must call destroy and return or you may get a memory leak.
                         // Note `isDestroyed` is a method on Activity.
+
                         if (isDestroyed) {
-                            this@apply?.destroy()
+                            bannerAdView?.destroy()
                             return
+                        } else {
+                            try {
+                                bannerAdView?.let { childView ->
+                                    (childView.parent as? ViewGroup)?.removeView(childView)
+                                }
+                                music_list_adv_banner.addView(bannerAdView)
+                            } catch (e: Exception) {
+                                YandexMetrica.reportError("PlayMusic1", e.message)
+                            }
                         }
                     }
 
@@ -118,6 +159,11 @@ class MusicsActivity : MusicPlayerOnlineActivity(), MusicAdapter.SetOnClick {
         } else {
             music_list_adv_banner.isVisible = false
         }
+    }
+
+    private fun dpToPx(context: Context, dp: Float): Int {
+        val density = context.resources.displayMetrics.density
+        return (dp * density + 0.5f).toInt()
     }
 
     override fun onDestroy() {

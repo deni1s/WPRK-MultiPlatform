@@ -32,6 +32,16 @@
             android:textAppearance="?textAppearanceHeadline6" />
     </LinearLayout>
 
+    <FrameLayout
+        android:id="@+id/category_all_activity_banner"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="8dp"
+        android:minHeight="50dp"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/category_toolbar" />
+
     <TextView
         android:id="@+id/textViewEmpty"
         android:layout_width="wrap_content"
@@ -66,13 +76,7 @@
         android:paddingBottom="8dp"
         android:clipToPadding="false"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintBottom_toTopOf="@+id/category_all_activity_banner"
+        app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/category_toolbar" />
-
-    <com.yandex.mobile.ads.banner.BannerAdView
-        android:id="@+id/category_all_activity_banner"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        app:layout_constraintBottom_toBottomOf="parent" />
+        app:layout_constraintTop_toBottomOf="@id/category_all_activity_banner" />
 </androidx.constraintlayout.widget.ConstraintLayout>

@@ -29,6 +29,7 @@ android {
             buildConfigField "String", "FIRST_AD_UNIT_ID", "\"R-M-2120824-2\""
             buildConfigField "String", "MAIN_BOTTOM_AD_UNIT_ID", "\"R-M-2120824-3\""
             buildConfigField "String", "PLAYER_TOP_AD_UNIT_ID", "\"R-M-2120824-4\""
+            buildConfigField "String", "PLAYER_BOTTOM_AD_UNIT_ID", "\"R-M-2120824-7\""
             buildConfigField "String", "AUTHORS_AD_UNIT_ID", "\"R-M-2120824-5\""
             buildConfigField "String", "MUSIC_LIST_AD_UNIT_ID", "\"R-M-2120824-6\""
 
@@ -40,6 +41,7 @@ android {
             buildConfigField "String", "FIRST_AD_UNIT_ID", "\"R-M-2120824-2\""
             buildConfigField "String", "MAIN_BOTTOM_AD_UNIT_ID", "\"R-M-2120824-3\""
             buildConfigField "String", "PLAYER_TOP_AD_UNIT_ID", "\"R-M-2120824-4\""
+            buildConfigField "String", "PLAYER_BOTTOM_AD_UNIT_ID", "\"R-M-2120824-7\""
             buildConfigField "String", "AUTHORS_AD_UNIT_ID", "\"R-M-2120824-5\""
             buildConfigField "String", "MUSIC_LIST_AD_UNIT_ID", "\"R-M-2120824-6\""
             buildConfigField "String", "YANDEX_APP_METRICS", "\"e3280d55-2155-4273-9be7-769e2dc395d4\""

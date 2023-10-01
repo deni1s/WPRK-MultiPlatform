@@ -36,6 +36,12 @@
                 android:textAppearance="?textAppearanceHeadline6" />
         </LinearLayout>
 
+        <FrameLayout
+            android:id="@+id/music_list_adv_banner"
+            android:layout_width="match_parent"
+            android:minHeight="50dp"
+            android:layout_height="wrap_content" />
+
         <TextView
             android:id="@+id/music_list_screen_warning"
             android:layout_width="match_parent"
@@ -60,13 +66,7 @@
             android:clipToPadding="false"
             android:layout_weight="1" />
 
-        <com.yandex.mobile.ads.banner.BannerAdView
-            android:id="@+id/music_list_adv_banner"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content" />
-
     </LinearLayout>
-
 
     <ProgressBar
         android:id="@+id/progress_music_list_activity"

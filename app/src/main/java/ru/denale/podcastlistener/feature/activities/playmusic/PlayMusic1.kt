@@ -504,8 +504,8 @@ class PlayMusic1 : AppCompatActivity() {
     private fun displayMusicInfo(music: Music, isFirst: Boolean, isLast: Boolean) {
         currentMusic = music
         imageLoadingService.load(cover_music, music.imageUrl.orEmpty(), this)
-        tv_name_music.text = music.title
-        tv_singer_music.text = music.author
+        textViewPlayerTitle.text = music.author
+        tv_singer_music.text = music.title
         tv_time_music.isVisible = !music.durationString.isNullOrEmpty()
         tv_time_music.text = music.durationString
 
@@ -522,17 +522,18 @@ class PlayMusic1 : AppCompatActivity() {
     private fun populateAdBanner() {
         if (playMusicViewModel.isAdvertisementAllowed()) {
             bannerAdView = BannerAdView(this)
-            val size = BannerAdSize.stickySize(
+            val size = BannerAdSize.fixedSize(
                 this.applicationContext,
-                resources.displayMetrics.widthPixels
+                resources.displayMetrics.widthPixels,
+                dpToPx(this, 160f)
             )
-            player_adv_banner.layoutParams = player_adv_banner.layoutParams.apply {
-                height = dpToPx(this@PlayMusic1, size.height.toFloat())
-            }
+//            player_adv_banner.layoutParams = player_adv_banner.layoutParams.apply {
+//                height = dpToPx(this@PlayMusic1, size.height.toFloat())
+//            }
             bannerAdView?.apply {
                 bannerAdView = this
                 setAdSize(size)
-                setAdUnitId(BuildConfig.PLAYER_TOP_AD_UNIT_ID)
+                setAdUnitId(BuildConfig.PLAYER_BOTTOM_AD_UNIT_ID)
                 setBannerAdEventListener(object : BannerAdEventListener {
                     override fun onAdLoaded() {
                         // If this callback occurs after the activity is destroyed, you
