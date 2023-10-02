@@ -116,6 +116,15 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content" />
 
+            <FrameLayout
+                android:id="@+id/main_screen_top_adv_banner"
+                android:layout_height="wrap_content"
+                android:layout_width="match_parent"
+                android:visibility="gone"
+                android:minHeight="50dp"
+                android:layout_marginTop="8dp"
+                android:layout_marginBottom="8dp"/>
+
             <View
                 android:layout_width="match_parent"
                 android:layout_height="2dp"
@@ -169,11 +178,11 @@
 
             <FrameLayout
                 android:id="@+id/main_screen_bottom_adv_banner"
-                android:layout_height="wrap_content"
+                android:layout_height="160dp"
                 android:layout_width="match_parent"
                 android:visibility="gone"
-                android:minHeight="50dp"
-                android:layout_marginBottom="16dp"/>
+                android:layout_marginTop="8dp"
+                android:layout_marginBottom="8dp"/>
 
             <FrameLayout
                 android:id="@+id/main_screen_bottom_slider"

@@ -2,8 +2,14 @@ package ru.denale.podcastlistener.feature.authors
 
 import android.content.Context
 import android.content.Intent
+import android.content.res.ColorStateList
+import android.os.Build
 import android.os.Bundle
+import android.view.Gravity
 import android.view.ViewGroup
+import android.widget.FrameLayout
+import android.widget.ProgressBar
+import android.widget.TextView
 import androidx.core.view.isVisible
 import androidx.recyclerview.widget.GridLayoutManager
 import com.google.android.material.internal.ViewUtils.dpToPx
@@ -43,6 +49,32 @@ class AuthorsActivity : MusicPlayerOnlineActivity(), AuthorsAdapter.OnClickAutho
     private var disposable: Disposable? = null
     private lateinit var endlessScrollListener: EndlessScroll
     private var bannerAdView: BannerAdView? = null
+
+    private val textViewAdvHint by lazy {
+        TextView(this).apply {
+            text = "Хорошего вам дня!..."
+            gravity = Gravity.CENTER
+            setTextAppearance(
+                this.context,
+                R.style.TextAppearance_MyTheme_Headline6
+            )
+        }
+    }
+    private val progressAdv by lazy {
+        ProgressBar(this).apply {
+            layoutParams = FrameLayout.LayoutParams(
+                ViewGroup.LayoutParams.WRAP_CONTENT,
+                ViewGroup.LayoutParams.WRAP_CONTENT
+            ).apply {
+                gravity = Gravity.CENTER
+            }
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+                val colorInt: Int = context.getColor(R.color.yellow)
+                progressTintList = ColorStateList.valueOf(colorInt)
+                indeterminateTintList = ColorStateList.valueOf(colorInt)
+            }
+        }
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -114,6 +146,10 @@ class AuthorsActivity : MusicPlayerOnlineActivity(), AuthorsAdapter.OnClickAutho
             authors_all_activity_banner.layoutParams = authors_all_activity_banner.layoutParams.apply {
                 height = dpToPx(this@AuthorsActivity, size.height.toFloat())
             }
+            progressAdv.let { childView ->
+                (childView.parent as? ViewGroup)?.removeView(childView)
+            }
+            authors_all_activity_banner.addView(progressAdv)
             bannerAdView?.apply {
                 bannerAdView = this
                 setAdSize(size)
@@ -139,7 +175,16 @@ class AuthorsActivity : MusicPlayerOnlineActivity(), AuthorsAdapter.OnClickAutho
                         }
                     }
 
-                    override fun onAdFailedToLoad(adRequestError: AdRequestError) = Unit
+                    override fun onAdFailedToLoad(adRequestError: AdRequestError) {
+                        textViewAdvHint.let { childView ->
+                            (childView.parent as? ViewGroup)?.removeView(childView)
+                        }
+                        progressAdv.let { childView ->
+                            (childView.parent as? ViewGroup)?.removeView(childView)
+                        }
+                        authors_all_activity_banner.removeAllViews()
+                        authors_all_activity_banner.addView(textViewAdvHint)
+                    }
 
                     override fun onAdClicked() = Unit
 
@@ -158,6 +203,12 @@ class AuthorsActivity : MusicPlayerOnlineActivity(), AuthorsAdapter.OnClickAutho
 
     override fun onStop() {
         bannerAdView?.let { childView ->
+            (childView.parent as? ViewGroup)?.removeView(childView)
+        }
+        progressAdv.let { childView ->
+            (childView.parent as? ViewGroup)?.removeView(childView)
+        }
+        textViewAdvHint.let { childView ->
             (childView.parent as? ViewGroup)?.removeView(childView)
         }
         authors_all_activity_banner.removeAllViews()

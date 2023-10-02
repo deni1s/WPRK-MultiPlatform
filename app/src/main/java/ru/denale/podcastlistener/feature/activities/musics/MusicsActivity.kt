@@ -7,8 +7,14 @@ import ru.denale.podcastlistener.data.Music
 import ru.denale.podcastlistener.feature.adapter.EndlessScroll
 import ru.denale.podcastlistener.feature.adapter.MusicAdapter
 import android.content.Intent
+import android.content.res.ColorStateList
+import android.os.Build
 import android.os.Bundle
+import android.view.Gravity
 import android.view.ViewGroup
+import android.widget.FrameLayout
+import android.widget.ProgressBar
+import android.widget.TextView
 import androidx.core.view.isVisible
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
@@ -36,6 +42,31 @@ class MusicsActivity : MusicPlayerOnlineActivity(), MusicAdapter.SetOnClick {
     val musicsViewModel: MusicsViewModel by viewModel { parametersOf(intent.extras) }
     private var disposable: MutableList<Disposable> = mutableListOf()
     private var bannerAdView: BannerAdView? = null
+    private val textViewAdvHint by lazy {
+        TextView(this).apply {
+            text = "Хорошего вам дня!..."
+            gravity = Gravity.CENTER
+            setTextAppearance(
+                this.context,
+                R.style.TextAppearance_MyTheme_Headline6
+            )
+        }
+    }
+    private val progressAdv by lazy {
+        ProgressBar(this).apply {
+            layoutParams = FrameLayout.LayoutParams(
+                ViewGroup.LayoutParams.WRAP_CONTENT,
+                ViewGroup.LayoutParams.WRAP_CONTENT
+            ).apply {
+                gravity = Gravity.CENTER
+            }
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+                val colorInt: Int = context.getColor(R.color.yellow)
+                progressTintList = ColorStateList.valueOf(colorInt)
+                indeterminateTintList = ColorStateList.valueOf(colorInt)
+            }
+        }
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -91,6 +122,12 @@ class MusicsActivity : MusicPlayerOnlineActivity(), MusicAdapter.SetOnClick {
         bannerAdView?.let { childView ->
             (childView.parent as? ViewGroup)?.removeView(childView)
         }
+        progressAdv.let { childView ->
+            (childView.parent as? ViewGroup)?.removeView(childView)
+        }
+        textViewAdvHint.let { childView ->
+            (childView.parent as? ViewGroup)?.removeView(childView)
+        }
         music_list_adv_banner.removeAllViews()
         bannerAdView?.destroy()
         bannerAdView?.setBannerAdEventListener(null)
@@ -119,6 +156,10 @@ class MusicsActivity : MusicPlayerOnlineActivity(), MusicAdapter.SetOnClick {
             music_list_adv_banner.layoutParams = music_list_adv_banner.layoutParams.apply {
                 height = dpToPx(this@MusicsActivity, size.height.toFloat())
             }
+            progressAdv.let { childView ->
+                (childView.parent as? ViewGroup)?.removeView(childView)
+            }
+            music_list_adv_banner.addView(progressAdv)
             bannerAdView?.apply {
                 bannerAdView = this
                 setAdSize(size)
@@ -144,7 +185,16 @@ class MusicsActivity : MusicPlayerOnlineActivity(), MusicAdapter.SetOnClick {
                         }
                     }
 
-                    override fun onAdFailedToLoad(adRequestError: AdRequestError) = Unit
+                    override fun onAdFailedToLoad(adRequestError: AdRequestError) {
+                        textViewAdvHint.let { childView ->
+                            (childView.parent as? ViewGroup)?.removeView(childView)
+                        }
+                        progressAdv.let { childView ->
+                            (childView.parent as? ViewGroup)?.removeView(childView)
+                        }
+                        music_list_adv_banner.removeAllViews()
+                        music_list_adv_banner.addView(textViewAdvHint)
+                    }
 
                     override fun onAdClicked() = Unit
 
