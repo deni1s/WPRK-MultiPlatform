@@ -30,13 +30,10 @@ import ru.denale.podcastlistener.common.SCREEN_TITLE_DATA
 import ru.denale.podcastlistener.feature.adapter.EndlessScroll
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.disposables.Disposable
-import kotlinx.android.synthetic.main.activity_authors.*
 import kotlinx.android.synthetic.main.activity_category.*
 import kotlinx.android.synthetic.main.activity_category.img_back_category
 import kotlinx.android.synthetic.main.activity_category.recycle_category_all_activity
 import kotlinx.android.synthetic.main.activity_category.textViewEmpty
-import kotlinx.android.synthetic.main.activity_play_music.player_adv_banner
-import kotlinx.android.synthetic.main.fragment_category.*
 import org.koin.android.ext.android.inject
 import org.koin.android.viewmodel.ext.android.viewModel
 import ru.denale.podcastlistener.BuildConfig
@@ -128,37 +125,37 @@ class CategoryActivity : MusicPlayerOnlineActivity(), CategoryAdapter.OnClickCat
 
     private fun populateAdBanner() {
         if (categoryViewModel.isAdvertisementAllowed()) {
-            bannerAdView = BannerAdView(this)
             val size = BannerAdSize.stickySize(
                 this.applicationContext,
                 resources.displayMetrics.widthPixels
             )
-            category_all_activity_banner.layoutParams = category_all_activity_banner.layoutParams.apply {
-                height = dpToPx(this@CategoryActivity, size.height.toFloat())
-            }
             progressAdv.let { childView ->
                 (childView.parent as? ViewGroup)?.removeView(childView)
             }
-            category_all_activity_banner.addView(progressAdv)
-            bannerAdView?.apply {
-                bannerAdView = this
-                setAdSize(size)
-                setAdUnitId(BuildConfig.AUTHORS_AD_UNIT_ID)
-                setBannerAdEventListener(object : BannerAdEventListener {
+            if (bannerAdView == null) {
+                category_all_activity_banner.layoutParams = category_all_activity_banner.layoutParams.apply {
+                    height = dpToPx(this@CategoryActivity, size.height.toFloat())
+                }
+                category_all_activity_banner.addView(progressAdv)
+            }
+            var previousBanner = bannerAdView
+            bannerAdView = BannerAdView(this).also { bannerView ->
+                bannerView.setAdSize(size)
+                bannerView.setAdUnitId(BuildConfig.AUTHORS_AD_UNIT_ID)
+                bannerView.setBannerAdEventListener(object : BannerAdEventListener {
                     override fun onAdLoaded() {
                         // If this callback occurs after the activity is destroyed, you
                         // must call destroy and return or you may get a memory leak.
                         // Note `isDestroyed` is a method on Activity.
 
                         if (isDestroyed) {
-                            bannerAdView?.destroy()
+                            bannerView.destroy()
                             return
                         } else {
                             try {
-                                bannerAdView?.let { childView ->
-                                    (childView.parent as? ViewGroup)?.removeView(childView)
-                                }
-                                category_all_activity_banner.addView(bannerAdView)
+                                clearAdView(previousBanner)
+                                previousBanner = null
+                                category_all_activity_banner.addView(bannerView)
                             } catch (e: Exception) {
                                 YandexMetrica.reportError("PlayMusic1", e.message)
                             }
@@ -166,14 +163,20 @@ class CategoryActivity : MusicPlayerOnlineActivity(), CategoryAdapter.OnClickCat
                     }
 
                     override fun onAdFailedToLoad(adRequestError: AdRequestError) {
-                        textViewAdvHint.let { childView ->
-                            (childView.parent as? ViewGroup)?.removeView(childView)
+                        if (previousBanner == null) {
+                            clearAdView(bannerAdView)
+                            bannerAdView = null
+                            textViewAdvHint.let { childView ->
+                                (childView.parent as? ViewGroup)?.removeView(childView)
+                            }
+                            progressAdv.let { childView ->
+                                (childView.parent as? ViewGroup)?.removeView(childView)
+                            }
+                            category_all_activity_banner.removeAllViews()
+                            category_all_activity_banner.addView(textViewAdvHint)
+                        } else {
+                            bannerAdView = previousBanner
                         }
-                        progressAdv.let { childView ->
-                            (childView.parent as? ViewGroup)?.removeView(childView)
-                        }
-                        category_all_activity_banner.removeAllViews()
-                        category_all_activity_banner.addView(textViewAdvHint)
                     }
 
                     override fun onAdClicked() = Unit
@@ -184,7 +187,7 @@ class CategoryActivity : MusicPlayerOnlineActivity(), CategoryAdapter.OnClickCat
 
                     override fun onImpression(impressionData: ImpressionData?) = Unit
                 })
-                loadAd(AdRequest.Builder().build())
+                bannerView.loadAd(AdRequest.Builder().build())
             }
         } else {
             category_all_activity_banner.isVisible = false
@@ -192,6 +195,16 @@ class CategoryActivity : MusicPlayerOnlineActivity(), CategoryAdapter.OnClickCat
     }
 
     override fun onStop() {
+        progressAdv.let { childView ->
+            (childView.parent as? ViewGroup)?.removeView(childView)
+        }
+        textViewAdvHint.let { childView ->
+            (childView.parent as? ViewGroup)?.removeView(childView)
+        }
+        super.onStop()
+    }
+
+    private fun clearAdView(bannerAdView: BannerAdView?) {
         bannerAdView?.let { childView ->
             (childView.parent as? ViewGroup)?.removeView(childView)
         }
@@ -204,8 +217,6 @@ class CategoryActivity : MusicPlayerOnlineActivity(), CategoryAdapter.OnClickCat
         category_all_activity_banner.removeAllViews()
         bannerAdView?.destroy()
         bannerAdView?.setBannerAdEventListener(null)
-        bannerAdView = null
-        super.onStop()
     }
 
     private fun dpToPx(context: Context, dp: Float): Int {
@@ -221,6 +232,10 @@ class CategoryActivity : MusicPlayerOnlineActivity(), CategoryAdapter.OnClickCat
     }
 
     override fun onDestroy() {
+        bannerAdView?.destroy()
+        bannerAdView?.setBannerAdEventListener(null)
+        bannerAdView = null
+
         disposable?.dispose()
         disposable = null
         super.onDestroy()

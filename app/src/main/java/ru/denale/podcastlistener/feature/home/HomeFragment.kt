@@ -52,6 +52,8 @@ class HomeFragment : MusicPlayerOnlineFragment(), MusicAdapter.SetOnClick,
     private var topBannerAdView: BannerAdView? = null
     private var bottomBannerAdView: BannerAdView? = null
     private var isBottomAdvRequeired = false
+    private var isBottomAdvInitialized = false
+    private var isTopAdvInitialized = false
     private var isAdvAllowed = false
     private val topTextViewAdvHint by lazy {
         TextView(requireActivity()).apply {
@@ -205,40 +207,40 @@ class HomeFragment : MusicPlayerOnlineFragment(), MusicAdapter.SetOnClick,
         if (homeViewModel.isAdvertisementAllowed()) {
             isAdvAllowed = true
             main_screen_top_adv_banner.isVisible = true
-            topBannerAdView = BannerAdView(requireContext())
             val size =
                 BannerAdSize.fixedSize(
                     requireContext(),
                     resources.displayMetrics.widthPixels,
                     160
                 )
-            main_screen_top_adv_banner.layoutParams =
-                main_screen_top_adv_banner.layoutParams.apply {
-                    height = dpToPx(requireContext(), size.height.toFloat())
-                }
             topProgressAdv.let { childView ->
                 (childView.parent as? ViewGroup)?.removeView(childView)
             }
-            main_screen_top_adv_banner.addView(topProgressAdv)
-            topBannerAdView?.apply {
-                topBannerAdView = this
-                setAdSize(size)
-                setAdUnitId(BuildConfig.MAIN_CENTER_AD_UNIT_ID)
-                setBannerAdEventListener(object : BannerAdEventListener {
+            if (topBannerAdView == null) {
+                main_screen_top_adv_banner.layoutParams =
+                    main_screen_top_adv_banner.layoutParams.apply {
+                        height = dpToPx(requireContext(), size.height.toFloat())
+                    }
+                main_screen_top_adv_banner.addView(topProgressAdv)
+            }
+            var previousBanner = topBannerAdView
+            topBannerAdView = BannerAdView(requireContext()).also { bannerView ->
+                bannerView.setAdSize(size)
+                bannerView.setAdUnitId(BuildConfig.MAIN_CENTER_AD_UNIT_ID)
+                bannerView.setBannerAdEventListener(object : BannerAdEventListener {
                     override fun onAdLoaded() {
                         // If this callback occurs after the activity is destroyed, you
                         // must call destroy and return or you may get a memory leak.
                         // Note `isDestroyed` is a method on Activity.
-
+                        isTopAdvInitialized = true
                         if (isDetached) {
                             topBannerAdView?.destroy()
                             return
                         } else {
                             try {
-                                topBannerAdView?.let { childView ->
-                                    (childView.parent as? ViewGroup)?.removeView(childView)
-                                }
-                                main_screen_top_adv_banner.addView(topBannerAdView)
+                                clearTopAdView(previousBanner)
+                                previousBanner = null
+                                main_screen_top_adv_banner.addView(bannerView)
                             } catch (e: Exception) {
                                 YandexMetrica.reportError("HomeFragmnetError", e.message)
                             }
@@ -246,14 +248,14 @@ class HomeFragment : MusicPlayerOnlineFragment(), MusicAdapter.SetOnClick,
                     }
 
                     override fun onAdFailedToLoad(adRequestError: AdRequestError) {
-                        topTextViewAdvHint.let { childView ->
-                            (childView.parent as? ViewGroup)?.removeView(childView)
+                        isTopAdvInitialized = true
+                        if (previousBanner == null) {
+                            clearTopAdView(topBannerAdView)
+                            topBannerAdView = null
+                            main_screen_top_adv_banner.addView(topTextViewAdvHint)
+                        } else {
+                            topBannerAdView = previousBanner
                         }
-                        topProgressAdv.let { childView ->
-                            (childView.parent as? ViewGroup)?.removeView(childView)
-                        }
-                        main_screen_top_adv_banner.removeAllViews()
-                        main_screen_top_adv_banner.addView(topTextViewAdvHint)
                     }
 
                     override fun onAdClicked() = Unit
@@ -264,7 +266,7 @@ class HomeFragment : MusicPlayerOnlineFragment(), MusicAdapter.SetOnClick,
 
                     override fun onImpression(impressionData: ImpressionData?) = Unit
                 })
-                loadAd(AdRequest.Builder().build())
+                bannerView.loadAd(AdRequest.Builder().build())
             }
         } else {
             main_screen_top_adv_banner.isVisible = false
@@ -274,39 +276,39 @@ class HomeFragment : MusicPlayerOnlineFragment(), MusicAdapter.SetOnClick,
     private fun populateBottomAdBanner() {
         if (homeViewModel.isAdvertisementAllowed()) {
             isAdvAllowed = true
-            bottomBannerAdView = BannerAdView(requireContext())
             val size =
                 BannerAdSize.fixedSize(
                     requireContext(),
                     resources.displayMetrics.widthPixels,
                     160
                 )
-            main_screen_bottom_adv_banner.layoutParams =
-                main_screen_bottom_adv_banner.layoutParams.apply {
-                    height = dpToPx(requireContext(), size.height.toFloat())
-                }
             bottomProgressAdv.let { childView ->
                 (childView.parent as? ViewGroup)?.removeView(childView)
             }
-            main_screen_bottom_adv_banner.addView(bottomProgressAdv)
-            bottomBannerAdView?.apply {
-                bottomBannerAdView = this
-                setAdSize(size)
-                setAdUnitId(BuildConfig.MAIN_BOTTOM_AD_UNIT_ID)
-                setBannerAdEventListener(object : BannerAdEventListener {
+            if (bottomBannerAdView == null) {
+                main_screen_bottom_adv_banner.layoutParams =
+                    main_screen_bottom_adv_banner.layoutParams.apply {
+                        height = dpToPx(requireContext(), size.height.toFloat())
+                    }
+                main_screen_bottom_adv_banner.addView(bottomProgressAdv)
+            }
+            var previousBanner = bottomBannerAdView
+            bottomBannerAdView = BannerAdView(requireContext()).also { bannerView ->
+                bannerView.setAdSize(size)
+                bannerView.setAdUnitId(BuildConfig.MAIN_BOTTOM_AD_UNIT_ID)
+                bannerView.setBannerAdEventListener(object : BannerAdEventListener {
                     override fun onAdLoaded() {
                         // If this callback occurs after the activity is destroyed, you
                         // must call destroy and return or you may get a memory leak.
                         // Note `isDestroyed` is a method on Activity.
-
+                        isBottomAdvInitialized = true
                         if (isDetached) {
                             bottomBannerAdView?.destroy()
                             return
                         } else {
                             try {
-                                bottomBannerAdView?.let { childView ->
-                                    (childView.parent as? ViewGroup)?.removeView(childView)
-                                }
+                                clearBottomAdView(previousBanner)
+                                previousBanner = null
                                 main_screen_bottom_adv_banner.addView(bottomBannerAdView)
                             } catch (e: Exception) {
                                 YandexMetrica.reportError("HomeFragmnetError", e.message)
@@ -315,14 +317,14 @@ class HomeFragment : MusicPlayerOnlineFragment(), MusicAdapter.SetOnClick,
                     }
 
                     override fun onAdFailedToLoad(adRequestError: AdRequestError) {
-                        bottomTextViewAdvHint.let { childView ->
-                            (childView.parent as? ViewGroup)?.removeView(childView)
+                        isBottomAdvInitialized = true
+                        if (previousBanner == null) {
+                            clearBottomAdView(bottomBannerAdView)
+                            bottomBannerAdView = null
+                            main_screen_bottom_adv_banner.addView(bottomTextViewAdvHint)
+                        } else {
+                            bottomBannerAdView = previousBanner
                         }
-                        bottomProgressAdv.let { childView ->
-                            (childView.parent as? ViewGroup)?.removeView(childView)
-                        }
-                        main_screen_bottom_adv_banner.removeAllViews()
-                        main_screen_bottom_adv_banner.addView(bottomTextViewAdvHint)
                     }
 
                     override fun onAdClicked() = Unit
@@ -333,7 +335,7 @@ class HomeFragment : MusicPlayerOnlineFragment(), MusicAdapter.SetOnClick,
 
                     override fun onImpression(impressionData: ImpressionData?) = Unit
                 })
-                loadAd(AdRequest.Builder().build())
+                bannerView.loadAd(AdRequest.Builder().build())
             }
         } else {
             main_screen_bottom_adv_banner.isVisible = false
@@ -342,38 +344,57 @@ class HomeFragment : MusicPlayerOnlineFragment(), MusicAdapter.SetOnClick,
 
     override fun onStart() {
         super.onStart()
-        if (isAdvAllowed) {
+        if (isTopAdvInitialized) {
             populateTopAdBanner()
-            if (isBottomAdvRequeired) {
-                populateBottomAdBanner()
-            }
+        }
+        if (isBottomAdvInitialized) {
+            populateBottomAdBanner()
         }
     }
 
-    override fun onStop() {
-        topBannerAdView?.let { childView ->
-            (childView.parent as? ViewGroup)?.removeView(childView)
-        }
-        topTextViewAdvHint.let { childView ->
-            (childView.parent as? ViewGroup)?.removeView(childView)
-        }
-        bottomTextViewAdvHint.let { childView ->
+    private fun clearTopAdView(bannerAdView: BannerAdView?) {
+        bannerAdView?.let { childView ->
             (childView.parent as? ViewGroup)?.removeView(childView)
         }
         topProgressAdv.let { childView ->
             (childView.parent as? ViewGroup)?.removeView(childView)
         }
-        bottomProgressAdv.let { childView ->
+        topTextViewAdvHint.let { childView ->
             (childView.parent as? ViewGroup)?.removeView(childView)
         }
         main_screen_top_adv_banner.removeAllViews()
+        bannerAdView?.destroy()
+        bannerAdView?.setBannerAdEventListener(null)
+    }
+
+    private fun clearBottomAdView(bannerAdView: BannerAdView?) {
+        bannerAdView?.let { childView ->
+            (childView.parent as? ViewGroup)?.removeView(childView)
+        }
+        bottomTextViewAdvHint.let { childView ->
+            (childView.parent as? ViewGroup)?.removeView(childView)
+        }
+        bottomTextViewAdvHint.let { childView ->
+            (childView.parent as? ViewGroup)?.removeView(childView)
+        }
         main_screen_bottom_adv_banner.removeAllViews()
-        topBannerAdView?.destroy()
-        topBannerAdView?.setBannerAdEventListener(null)
-        topBannerAdView = null
-        bottomBannerAdView?.destroy()
-        bottomBannerAdView?.setBannerAdEventListener(null)
-        bottomBannerAdView = null
+        bannerAdView?.destroy()
+        bannerAdView?.setBannerAdEventListener(null)
+    }
+
+    override fun onStop() {
+        topProgressAdv.let { childView ->
+            (childView.parent as? ViewGroup)?.removeView(childView)
+        }
+        topTextViewAdvHint.let { childView ->
+            (childView.parent as? ViewGroup)?.removeView(childView)
+        }
+        bottomProgressAdv.let { childView ->
+            (childView.parent as? ViewGroup)?.removeView(childView)
+        }
+        bottomTextViewAdvHint.let { childView ->
+            (childView.parent as? ViewGroup)?.removeView(childView)
+        }
         super.onStop()
     }
 
@@ -386,6 +407,16 @@ class HomeFragment : MusicPlayerOnlineFragment(), MusicAdapter.SetOnClick,
         startActivity(Intent(requireContext(), PlayMusic1::class.java).apply {
             putExtra(EXTRA_KEY_DATA, music)
         })
+    }
+
+    override fun onDestroy() {
+        topBannerAdView?.destroy()
+        topBannerAdView?.setBannerAdEventListener(null)
+        topBannerAdView = null
+        bottomBannerAdView?.destroy()
+        bottomBannerAdView?.setBannerAdEventListener(null)
+        bottomBannerAdView = null
+        super.onDestroy()
     }
 
     override fun onClick(category: Genre) {

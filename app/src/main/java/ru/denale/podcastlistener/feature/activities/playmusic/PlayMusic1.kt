@@ -147,7 +147,7 @@ class PlayMusic1 : AppCompatActivity() {
                         btn_play_music.setImageResource(R.drawable.ic_pause)
                         runOnUiThread {
                             try {
-                                slider.valueFrom = 0f
+                                slider.valueFrom = 0.0f
                                 slider.valueTo = state.duration.toFloat()
                                 slider.value = state.position.toFloat()
                             } catch (e: Exception) {
@@ -161,7 +161,7 @@ class PlayMusic1 : AppCompatActivity() {
                         btn_play_music.isClickable = false
                         PlayProgress.show()
                         try {
-                            slider.valueFrom = 0f
+                            slider.valueFrom = 0.0f
                             slider.value = 0f
                         } catch (e: Exception) {
                             YandexMetrica.reportError("slider error 4", e.message)
@@ -189,7 +189,7 @@ class PlayMusic1 : AppCompatActivity() {
                                 state.isLast
                             )
                             try {
-                                slider.valueFrom = 0F
+                                slider.valueFrom = 0.0f
                                 slider.valueTo = state.duration.toFloat()
                                 slider.value = state.position.toFloat()
                             } catch (e: Exception) {
@@ -247,6 +247,7 @@ class PlayMusic1 : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_play_music)
+        populateAdBanner()
         intent.data?.getQueryParameter(SCREEN_PODCAST_ID_DATA)?.let {
             stopService(getCurrentRunningServiceIntent("ru.denale.podcastlistener"))
             playMusicViewModel.loadPodcastId(it)
@@ -359,10 +360,11 @@ class PlayMusic1 : AppCompatActivity() {
             btn_play_music.isClickable = true
             tv_time_music.isVisible = true
             tv_time_music.text = convertSecondsToMMSS(duration)
-            slider.valueFrom = 0F
-            slider.valueTo = duration.toFloat()
+
             //    slider.value = 0F
             try {
+                slider.valueFrom = 0.0f
+                slider.valueTo = duration.toFloat()
                 PlayProgress.hide()
             } catch (e: Exception) {
             }
@@ -391,7 +393,7 @@ class PlayMusic1 : AppCompatActivity() {
         }, 1000, 1000)
     }
 
-    override fun onStop() {
+    private fun clearAdv(bannerAdView: BannerAdView?) {
         bannerAdView?.let { childView ->
             (childView.parent as? ViewGroup)?.removeView(childView)
         }
@@ -404,15 +406,27 @@ class PlayMusic1 : AppCompatActivity() {
         player_adv_banner.removeAllViews()
         bannerAdView?.destroy()
         bannerAdView?.setBannerAdEventListener(null)
-        bannerAdView = null
+    }
+
+    override fun onStop() {
+        progressAdv.let { childView ->
+            (childView.parent as? ViewGroup)?.removeView(childView)
+        }
+        textViewAdvHint.let { childView ->
+            (childView.parent as? ViewGroup)?.removeView(childView)
+        }
         super.onStop()
         timer?.cancel()
         timer = null
     }
 
+    override fun onRestart() {
+        super.onRestart()
+        populateAdBanner()
+    }
+
     override fun onStart() {
         super.onStart()
-        populateAdBanner()
         if (wasServiceInitialized) {
             sendCommand(MediaActivityEvent.onNewDataRequired)
         }
@@ -533,7 +547,6 @@ class PlayMusic1 : AppCompatActivity() {
 
     private fun populateAdBanner() {
         if (playMusicViewModel.isAdvertisementAllowed()) {
-            bannerAdView = BannerAdView(this)
             val size = BannerAdSize.fixedSize(
                 this.applicationContext,
                 resources.displayMetrics.widthPixels,
@@ -542,26 +555,27 @@ class PlayMusic1 : AppCompatActivity() {
             progressAdv.let { childView ->
                 (childView.parent as? ViewGroup)?.removeView(childView)
             }
-            player_adv_banner.addView(progressAdv)
-            bannerAdView?.apply {
-                bannerAdView = this
-                setAdSize(size)
-                setAdUnitId(BuildConfig.PLAYER_BOTTOM_AD_UNIT_ID)
-                setBannerAdEventListener(object : BannerAdEventListener {
+            if (bannerAdView == null) {
+                player_adv_banner.addView(progressAdv)
+            }
+            var previousBanner = bannerAdView
+            bannerAdView = BannerAdView(this).also { bannerView ->
+                bannerView.setAdSize(size)
+                bannerView.setAdUnitId(BuildConfig.PLAYER_BOTTOM_AD_UNIT_ID)
+                bannerView.setBannerAdEventListener(object : BannerAdEventListener {
                     override fun onAdLoaded() {
                         // If this callback occurs after the activity is destroyed, you
                         // must call destroy and return or you may get a memory leak.
                         // Note `isDestroyed` is a method on Activity.
 
                         if (isDestroyed) {
-                            bannerAdView?.destroy()
+                            bannerView.destroy()
                             return
                         } else {
                             try {
-                                bannerAdView?.let { childView ->
-                                    (childView.parent as? ViewGroup)?.removeView(childView)
-                                }
-                                player_adv_banner.addView(bannerAdView)
+                                clearAdv(previousBanner)
+                                previousBanner = null
+                                player_adv_banner.addView(bannerView)
                             } catch (e: Exception) {
                                 YandexMetrica.reportError("PlayMusic1", e.message)
                             }
@@ -569,14 +583,20 @@ class PlayMusic1 : AppCompatActivity() {
                     }
 
                     override fun onAdFailedToLoad(adRequestError: AdRequestError) {
-                        textViewAdvHint.let { childView ->
-                            (childView.parent as? ViewGroup)?.removeView(childView)
+                        if (previousBanner == null) {
+                            clearAdv(bannerAdView)
+                            bannerAdView = null
+                            textViewAdvHint.let { childView ->
+                                (childView.parent as? ViewGroup)?.removeView(childView)
+                            }
+                            progressAdv.let { childView ->
+                                (childView.parent as? ViewGroup)?.removeView(childView)
+                            }
+                            player_adv_banner.removeAllViews()
+                            player_adv_banner.addView(textViewAdvHint)
+                        } else {
+                            bannerAdView = previousBanner
                         }
-                        progressAdv.let { childView ->
-                            (childView.parent as? ViewGroup)?.removeView(childView)
-                        }
-                        player_adv_banner.removeAllViews()
-                        player_adv_banner.addView(textViewAdvHint)
                     }
 
                     override fun onAdClicked() = Unit
@@ -587,7 +607,7 @@ class PlayMusic1 : AppCompatActivity() {
 
                     override fun onImpression(impressionData: ImpressionData?) = Unit
                 })
-                loadAd(AdRequest.Builder().build())
+                bannerView.loadAd(AdRequest.Builder().build())
             }
         } else {
             player_adv_banner.isVisible = false
@@ -600,6 +620,10 @@ class PlayMusic1 : AppCompatActivity() {
     }
 
     override fun onDestroy() {
+        bannerAdView?.destroy()
+        bannerAdView?.setBannerAdEventListener(null)
+        bannerAdView = null
+
         super.onDestroy()
         if (wasServiceInitialized) {
             unbindService(connection)
