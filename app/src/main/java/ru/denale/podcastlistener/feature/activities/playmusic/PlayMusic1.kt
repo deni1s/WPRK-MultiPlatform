@@ -205,6 +205,8 @@ class PlayMusic1 : AppCompatActivity() {
                             } else {
                                 timer?.cancel()
                             }
+                            type = state.type
+                            (state.type as? InitializationType.Type)?.let { setMenuClickListener(it.id) }
                         }
                     }
 
@@ -363,13 +365,19 @@ class PlayMusic1 : AppCompatActivity() {
 
             //    slider.value = 0F
             try {
-                slider.valueFrom = 0.0f
-                slider.valueTo = duration.toFloat()
+                val valueFrom = 0.0f
+                slider.valueFrom = valueFrom
+                val valueTo = duration.toFloat()
+                if (valueTo > valueFrom) {
+                    slider.valueTo = valueTo
+                } else {
+                    slider.valueTo = valueFrom
+                }
                 PlayProgress.hide()
             } catch (e: Exception) {
+                YandexMetrica.reportError("slider error 10", e.message)
             }
             btn_play_music.setImageResource(R.drawable.ic_pause)
-            slider.valueTo = duration.toFloat()
             setTimer()
         }
     }
@@ -528,6 +536,7 @@ class PlayMusic1 : AppCompatActivity() {
     }
 
     private fun displayMusicInfo(music: Music, isFirst: Boolean, isLast: Boolean) {
+        progress_player.isVisible = false
         currentMusic = music
         imageLoadingService.load(cover_music, music.imageUrl.orEmpty(), this)
         textViewPlayerTitle.text = music.author

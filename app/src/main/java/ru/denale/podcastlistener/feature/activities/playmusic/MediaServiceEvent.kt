@@ -36,6 +36,7 @@ sealed class MediaServiceEvent {
         val music: Music,
         val isLast: Boolean,
         val isFirst: Boolean,
-        val isMusicInProgress: Boolean
+        val isMusicInProgress: Boolean,
+        val type: InitializationType?
     ) : MediaServiceEvent()
 }

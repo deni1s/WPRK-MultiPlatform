@@ -273,7 +273,8 @@ class MusicPlayerService : Service() {
                             music = it,
                             isLast = musicList.lastIndex == musicPosition,
                             isFirst = musicPosition == 0,
-                            isMusicInProgress = mediaPlayer?.isPlaying == true
+                            isMusicInProgress = mediaPlayer?.isPlaying == true,
+                            type = initializationType
                         )
                     )
                     updateNotification(createNotification(it))
@@ -292,7 +293,7 @@ class MusicPlayerService : Service() {
                 intent.action?.removePrefix(INITIALIZATION_WITH_PODCAST_COMMAND).orEmpty()
             )
             if (initializationType != null && newType != initializationType) {
-                clearServiceData(false)
+                clearServiceData()
             } else {
                 initializationType = newType
                 updateNotification(createDefaultNotification())
@@ -303,7 +304,7 @@ class MusicPlayerService : Service() {
                 intent.action?.removePrefix(INITIALIZATION_WITH_TYPE_COMMAND).orEmpty()
             )
             if (initializationType != null && newType != initializationType) {
-                clearServiceData(false)
+                clearServiceData()
             } else {
                 initializationType = newType
 
@@ -315,7 +316,8 @@ class MusicPlayerService : Service() {
                             music = it,
                             isLast = musicList.lastIndex == musicPosition,
                             isFirst = musicPosition == 0,
-                            isMusicInProgress = mediaPlayer?.isPlaying == true
+                            isMusicInProgress = mediaPlayer?.isPlaying == true,
+                            type = initializationType
                         )
                     )
                     updateNotification(createNotification(it))
@@ -497,7 +499,7 @@ class MusicPlayerService : Service() {
         super.onDestroy()
     }
 
-    private fun clearServiceData(shouldReleasePlayer: Boolean = true) {
+    private fun clearServiceData() {
         if (initializationType != null && initializationType is InitializationType.Type) {
             musicList.getOrNull(musicPosition)?.let {
                 musicRepository.saveLastSessionData(
@@ -511,16 +513,10 @@ class MusicPlayerService : Service() {
         wasDragged = false
         isNotified = false
         compositeDisposable.clear()
-        if (shouldReleasePlayer) {
-            if (mediaPlayer != null) {
-                mediaPlayer?.release()
-                mediaPlayer = null
-            }
-        } else {
-            if (mediaPlayer?.isPlaying == true) {
-                mediaPlayer?.pause()
-            }
+        if (mediaPlayer?.isPlaying == true) {
+            mediaPlayer?.pause()
         }
+        mediaPlayer?.release()
         mediaPlayer = null
     }
 
@@ -572,7 +568,8 @@ class MusicPlayerService : Service() {
                         music = music,
                         isLast = musicList.lastIndex == musicPosition,
                         isFirst = musicPosition == 0,
-                        isMusicInProgress = mediaPlayer?.isPlaying == true
+                        isMusicInProgress = mediaPlayer?.isPlaying == true,
+                        type = initializationType
                     )
                 )
             }
@@ -581,7 +578,7 @@ class MusicPlayerService : Service() {
             is MediaActivityEvent.onPreviousRequeired -> playPreviousMusic(mediaPlayer?.isPlaying == true)
             is MediaActivityEvent.onNewInitializationRequired -> {
                 if (initializationType != null && initializationType != event.type) {
-                    clearServiceData(false)
+                    clearServiceData()
                 }
                 if (initializationType != event.type && musicList != event.list) {
                     musicList = event.list
@@ -604,7 +601,8 @@ class MusicPlayerService : Service() {
                                 music = it,
                                 isLast = musicList.lastIndex == musicPosition,
                                 isFirst = musicPosition == 0,
-                                isMusicInProgress = mediaPlayer?.isPlaying == true
+                                isMusicInProgress = mediaPlayer?.isPlaying == true,
+                                type = initializationType
                             )
                         )
                     }
@@ -621,7 +619,8 @@ class MusicPlayerService : Service() {
                         music = event.music,
                         isLast = musicList.lastIndex == musicPosition,
                         isFirst = musicPosition == 0,
-                        isMusicInProgress = mediaPlayer?.isPlaying == true
+                        isMusicInProgress = mediaPlayer?.isPlaying == true,
+                        type = initializationType
                     )
                 )
                 if (mediaPlayer?.isPlaying == true) {
@@ -654,7 +653,7 @@ class MusicPlayerService : Service() {
     override fun onUnbind(intent: Intent?): Boolean {
         isBound = false
         if (mediaPlayer?.isPlaying == false || mediaPlayer == null) {
-            clearServiceData(true)
+            clearServiceData()
             stopService()
         }
 
