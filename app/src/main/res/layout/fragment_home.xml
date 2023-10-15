@@ -178,7 +178,8 @@
 
             <FrameLayout
                 android:id="@+id/main_screen_bottom_adv_banner"
-                android:layout_height="160dp"
+                android:layout_height="wrap_content"
+                android:minHeight="50dp"
                 android:layout_width="match_parent"
                 android:visibility="gone"
                 android:layout_marginTop="8dp"

@@ -44,8 +44,9 @@ class MusicsActivity : MusicPlayerOnlineActivity(), MusicAdapter.SetOnClick {
     private var bannerAdView: BannerAdView? = null
     private val textViewAdvHint by lazy {
         TextView(this).apply {
-            text = "Хорошего вам дня!..."
+            text = "События моей жизни – это ступени к большему успеху и счастью."
             gravity = Gravity.CENTER
+            setPadding(16, 0, 16, 0)
             setTextAppearance(
                 this.context,
                 R.style.TextAppearance_MyTheme_Headline6

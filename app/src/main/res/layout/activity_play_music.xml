@@ -43,9 +43,10 @@
         app:layout_constraintTop_toTopOf="parent" />
 
     <FrameLayout
-        android:id="@+id/player_adv_banner"
+        android:id="@+id/player_top_adv_banner"
         android:layout_width="0dp"
-        android:layout_height="160dp"
+        android:layout_height="wrap_content"
+        android:minHeight="50dp"
         android:layout_marginTop="8dp"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
@@ -59,17 +60,26 @@
         android:layout_marginTop="8dp"
         android:layout_marginEnd="8dp"
         android:layout_marginBottom="8dp"
-        app:layout_constraintBottom_toTopOf="@id/tv_singer_music"
+        app:layout_constraintBottom_toTopOf="@id/player_bottom_adv_banner"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/player_adv_banner"
+        app:layout_constraintTop_toBottomOf="@+id/player_top_adv_banner"
         tools:src="@drawable/default_image" />
+
+    <FrameLayout
+        android:id="@+id/player_bottom_adv_banner"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:minHeight="50dp"
+        android:layout_marginBottom="8dp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintBottom_toTopOf="@+id/tv_singer_music" />
 
     <TextView
         android:id="@+id/tv_singer_music"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginTop="20dp"
         android:layout_marginBottom="8dp"
         android:gravity="center"
         android:paddingStart="16dp"

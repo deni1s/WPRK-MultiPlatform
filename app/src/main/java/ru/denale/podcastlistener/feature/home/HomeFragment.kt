@@ -57,8 +57,9 @@ class HomeFragment : MusicPlayerOnlineFragment(), MusicAdapter.SetOnClick,
     private var isAdvAllowed = false
     private val topTextViewAdvHint by lazy {
         TextView(requireActivity()).apply {
-            text = "Хорошего вам дня!..."
+            text = "Я знаю, что мир полон возможностей, и я нахожу их с легкостью."
             gravity = Gravity.CENTER
+            setPadding(16, 0, 16, 0)
             setTextAppearance(
                 requireContext(),
                 R.style.TextAppearance_MyTheme_Headline6
@@ -67,8 +68,9 @@ class HomeFragment : MusicPlayerOnlineFragment(), MusicAdapter.SetOnClick,
     }
     private val bottomTextViewAdvHint by lazy {
         TextView(requireActivity()).apply {
-            text = "Хорошего вам дня!..."
+            text = "Я знаю, что мир полон возможностей, и я нахожу их с легкостью."
             gravity = Gravity.CENTER
+            setPadding(16, 0, 16, 0)
             setTextAppearance(
                 requireContext(),
                 R.style.TextAppearance_MyTheme_Headline6
@@ -207,12 +209,7 @@ class HomeFragment : MusicPlayerOnlineFragment(), MusicAdapter.SetOnClick,
         if (homeViewModel.isAdvertisementAllowed()) {
             isAdvAllowed = true
             main_screen_top_adv_banner.isVisible = true
-            val size =
-                BannerAdSize.fixedSize(
-                    requireContext(),
-                    resources.displayMetrics.widthPixels,
-                    160
-                )
+            val size = BannerAdSize.stickySize(requireContext(), resources.displayMetrics.widthPixels)
             topProgressAdv.let { childView ->
                 (childView.parent as? ViewGroup)?.removeView(childView)
             }
@@ -276,12 +273,7 @@ class HomeFragment : MusicPlayerOnlineFragment(), MusicAdapter.SetOnClick,
     private fun populateBottomAdBanner() {
         if (homeViewModel.isAdvertisementAllowed()) {
             isAdvAllowed = true
-            val size =
-                BannerAdSize.fixedSize(
-                    requireContext(),
-                    resources.displayMetrics.widthPixels,
-                    160
-                )
+            val size = BannerAdSize.stickySize(requireContext(), resources.displayMetrics.widthPixels)
             bottomProgressAdv.let { childView ->
                 (childView.parent as? ViewGroup)?.removeView(childView)
             }

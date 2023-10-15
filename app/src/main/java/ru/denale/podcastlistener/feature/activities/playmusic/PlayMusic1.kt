@@ -61,6 +61,8 @@ class PlayMusic1 : AppCompatActivity() {
     //   private var musicPlayerServiceIntent: Intent? = null
     private var isDragging: Boolean = false
     private var timer: Timer? = null
+    private var topAdvTimer: Timer? = null
+    private var bottomAdvTimer: Timer? = null
     private var isAdvertisementAvialable = true
     private var playerBinder: MusicPlayerService.PlayerEventBinder? = null
     private var wasServiceInitialized = false
@@ -69,7 +71,8 @@ class PlayMusic1 : AppCompatActivity() {
     private var podcastId: String? = null
     private var progress: Int? = null
     private var command: String = INITIALIZATION_COMMAND
-    private var bannerAdView: BannerAdView? = null
+    private var topBannerAdView: BannerAdView? = null
+    private var bottomBannerAdView: BannerAdView? = null
     private var startForResult = registerForActivityResult(
         ActivityResultContracts.StartActivityForResult()
     ) { result: ActivityResult ->
@@ -80,17 +83,44 @@ class PlayMusic1 : AppCompatActivity() {
         }
     }
 
-    private val textViewAdvHint by lazy {
+    private val topTextViewAdvHint by lazy {
         TextView(this).apply {
-            text = "Хорошего вам дня!..."
+            text = "Я могу больше, чем я думаю! Мой потенциал велик! Я с легкостью превращаю невозможное в возможное!"
             gravity = Gravity.CENTER
+            setPadding(16, 0, 16, 0)
             setTextAppearance(
                 this.context,
                 R.style.TextAppearance_MyTheme_Headline6
             )
         }
     }
-    private val progressAdv by lazy {
+    private val bottomTextViewAdvHint by lazy {
+        TextView(this).apply {
+            text = "Приятного прослушивания!"
+            gravity = Gravity.CENTER
+            setPadding(16, 0, 16, 0)
+            setTextAppearance(
+                this.context,
+                R.style.TextAppearance_MyTheme_Headline6
+            )
+        }
+    }
+    private val topProgressAdv by lazy {
+        ProgressBar(this).apply {
+            layoutParams = FrameLayout.LayoutParams(
+                ViewGroup.LayoutParams.WRAP_CONTENT,
+                ViewGroup.LayoutParams.WRAP_CONTENT
+            ).apply {
+                gravity = Gravity.CENTER
+            }
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+                val colorInt: Int = context.getColor(R.color.yellow)
+                progressTintList = ColorStateList.valueOf(colorInt)
+                indeterminateTintList = ColorStateList.valueOf(colorInt)
+            }
+        }
+    }
+    private val bottomProgressAdv by lazy {
         ProgressBar(this).apply {
             layoutParams = FrameLayout.LayoutParams(
                 ViewGroup.LayoutParams.WRAP_CONTENT,
@@ -249,7 +279,8 @@ class PlayMusic1 : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_play_music)
-        populateAdBanner()
+        populateTopAdBanner()
+        populateBottomAdBanner()
         intent.data?.getQueryParameter(SCREEN_PODCAST_ID_DATA)?.let {
             stopService(getCurrentRunningServiceIntent("ru.denale.podcastlistener"))
             playMusicViewModel.loadPodcastId(it)
@@ -401,36 +432,90 @@ class PlayMusic1 : AppCompatActivity() {
         }, 1000, 1000)
     }
 
-    private fun clearAdv(bannerAdView: BannerAdView?) {
+    private fun setTopAdvTimer() {
+        topAdvTimer = Timer()
+        topAdvTimer?.schedule(object : TimerTask() {
+            override fun run() {
+                runOnUiThread {
+                    populateTopAdBanner()
+                }
+            }
+
+        }, 4000, 4000)
+    }
+
+    private fun setBottomAdvTimer() {
+        bottomAdvTimer = Timer()
+        bottomAdvTimer?.schedule(object : TimerTask() {
+            override fun run() {
+                runOnUiThread {
+                    populateBottomAdBanner()
+                }
+            }
+
+        }, 4000, 4000)
+    }
+
+    private fun clearTopAdv(bannerAdView: BannerAdView?) {
         bannerAdView?.let { childView ->
             (childView.parent as? ViewGroup)?.removeView(childView)
         }
-        progressAdv.let { childView ->
+        topProgressAdv.let { childView ->
             (childView.parent as? ViewGroup)?.removeView(childView)
         }
-        textViewAdvHint.let { childView ->
+        topTextViewAdvHint.let { childView ->
             (childView.parent as? ViewGroup)?.removeView(childView)
         }
-        player_adv_banner.removeAllViews()
+        player_top_adv_banner.removeAllViews()
+        bannerAdView?.destroy()
+        bannerAdView?.setBannerAdEventListener(null)
+    }
+
+    private fun clearBottomAdv(bannerAdView: BannerAdView?) {
+        bannerAdView?.let { childView ->
+            (childView.parent as? ViewGroup)?.removeView(childView)
+        }
+        bottomProgressAdv.let { childView ->
+            (childView.parent as? ViewGroup)?.removeView(childView)
+        }
+        bottomTextViewAdvHint.let { childView ->
+            (childView.parent as? ViewGroup)?.removeView(childView)
+        }
+        player_bottom_adv_banner.removeAllViews()
         bannerAdView?.destroy()
         bannerAdView?.setBannerAdEventListener(null)
     }
 
     override fun onStop() {
-        progressAdv.let { childView ->
+        topProgressAdv.let { childView ->
             (childView.parent as? ViewGroup)?.removeView(childView)
         }
-        textViewAdvHint.let { childView ->
+        topTextViewAdvHint.let { childView ->
+            (childView.parent as? ViewGroup)?.removeView(childView)
+        }
+        bottomProgressAdv.let { childView ->
+            (childView.parent as? ViewGroup)?.removeView(childView)
+        }
+        bottomTextViewAdvHint.let { childView ->
             (childView.parent as? ViewGroup)?.removeView(childView)
         }
         super.onStop()
         timer?.cancel()
         timer = null
+        stopAdvTimer()
+    }
+
+    private fun stopAdvTimer() {
+        topAdvTimer?.cancel()
+        topAdvTimer = null
+        bottomAdvTimer?.cancel()
+        bottomAdvTimer = null
     }
 
     override fun onRestart() {
         super.onRestart()
-        populateAdBanner()
+        populateTopAdBanner()
+        populateBottomAdBanner()
     }
 
     override fun onStart() {
@@ -554,23 +639,19 @@ class PlayMusic1 : AppCompatActivity() {
         //  btn_play_music.setImageResource(R.drawable.ic_play)
     }
 
-    private fun populateAdBanner() {
+    private fun populateTopAdBanner() {
         if (playMusicViewModel.isAdvertisementAllowed()) {
-            val size = BannerAdSize.fixedSize(
-                this.applicationContext,
-                resources.displayMetrics.widthPixels,
-                160
-            )
-            progressAdv.let { childView ->
+            val size = BannerAdSize.stickySize(this.applicationContext, resources.displayMetrics.widthPixels)
+            topProgressAdv.let { childView ->
                 (childView.parent as? ViewGroup)?.removeView(childView)
             }
-            if (bannerAdView == null) {
-                player_adv_banner.addView(progressAdv)
+            if (topBannerAdView == null) {
+                player_top_adv_banner.addView(topProgressAdv)
             }
-            var previousBanner = bannerAdView
-            bannerAdView = BannerAdView(this).also { bannerView ->
+            var previousBanner = topBannerAdView
+            topBannerAdView = BannerAdView(this).also { bannerView ->
                 bannerView.setAdSize(size)
-                bannerView.setAdUnitId(BuildConfig.PLAYER_BOTTOM_AD_UNIT_ID)
+                bannerView.setAdUnitId(BuildConfig.PLAYER_TOP_AD_UNIT_ID)
                 bannerView.setBannerAdEventListener(object : BannerAdEventListener {
                     override fun onAdLoaded() {
                         // If this callback occurs after the activity is destroyed, you
@@ -582,9 +663,12 @@ class PlayMusic1 : AppCompatActivity() {
                             return
                         } else {
                             try {
-                                clearAdv(previousBanner)
+                                clearTopAdv(previousBanner)
                                 previousBanner = null
-                                player_adv_banner.addView(bannerView)
+                                player_top_adv_banner.addView(bannerView)
+                                if (topAdvTimer == null) {
+                                    setTopAdvTimer()
+                                }
                             } catch (e: Exception) {
                                 YandexMetrica.reportError("PlayMusic1", e.message)
                             }
@@ -593,18 +677,21 @@ class PlayMusic1 : AppCompatActivity() {
 
                     override fun onAdFailedToLoad(adRequestError: AdRequestError) {
                         if (previousBanner == null) {
-                            clearAdv(bannerAdView)
-                            bannerAdView = null
-                            textViewAdvHint.let { childView ->
+                            clearTopAdv(topBannerAdView)
+                            topBannerAdView = null
+                            topTextViewAdvHint.let { childView ->
                                 (childView.parent as? ViewGroup)?.removeView(childView)
                             }
-                            progressAdv.let { childView ->
+                            topProgressAdv.let { childView ->
                                 (childView.parent as? ViewGroup)?.removeView(childView)
                             }
-                            player_adv_banner.removeAllViews()
-                            player_adv_banner.addView(textViewAdvHint)
+                            player_top_adv_banner.removeAllViews()
+                            player_top_adv_banner.addView(topTextViewAdvHint)
                         } else {
-                            bannerAdView = previousBanner
+                            topBannerAdView = previousBanner
+                        }
+                        if (topAdvTimer == null) {
+                            setTopAdvTimer()
                         }
                     }
 
@@ -619,19 +706,89 @@ class PlayMusic1 : AppCompatActivity() {
                 bannerView.loadAd(AdRequest.Builder().build())
             }
         } else {
-            player_adv_banner.isVisible = false
+            player_top_adv_banner.isVisible = false
         }
     }
 
-    fun dpToPx(context: Context, dp: Float): Int {
-        val density = context.resources.displayMetrics.density
-        return (dp * density + 0.5f).toInt()
+    private fun populateBottomAdBanner() {
+        if (playMusicViewModel.isAdvertisementAllowed()) {
+            val size = BannerAdSize.stickySize(this.applicationContext, resources.displayMetrics.widthPixels)
+            bottomProgressAdv.let { childView ->
+                (childView.parent as? ViewGroup)?.removeView(childView)
+            }
+            if (bottomBannerAdView == null) {
+                player_bottom_adv_banner.addView(bottomProgressAdv)
+            }
+            var previousBanner = bottomBannerAdView
+            bottomBannerAdView = BannerAdView(this).also { bannerView ->
+                bannerView.setAdSize(size)
+                bannerView.setAdUnitId(BuildConfig.PLAYER_BOTTOM_AD_UNIT_ID)
+                bannerView.setBannerAdEventListener(object : BannerAdEventListener {
+                    override fun onAdLoaded() {
+                        // If this callback occurs after the activity is destroyed, you
+                        // must call destroy and return or you may get a memory leak.
+                        // Note `isDestroyed` is a method on Activity.
+
+                        if (isDestroyed) {
+                            bannerView.destroy()
+                            return
+                        } else {
+                            try {
+                                clearBottomAdv(previousBanner)
+                                previousBanner = null
+                                player_bottom_adv_banner.addView(bannerView)
+                                if (bottomAdvTimer == null) {
+                                    setBottomAdvTimer()
+                                }
+                            } catch (e: Exception) {
+                                YandexMetrica.reportError("PlayMusic1", e.message)
+                            }
+                        }
+                    }
+
+                    override fun onAdFailedToLoad(adRequestError: AdRequestError) {
+                        if (previousBanner == null) {
+                            clearBottomAdv(bottomBannerAdView)
+                            bottomBannerAdView = null
+                            bottomTextViewAdvHint.let { childView ->
+                                (childView.parent as? ViewGroup)?.removeView(childView)
+                            }
+                            bottomProgressAdv.let { childView ->
+                                (childView.parent as? ViewGroup)?.removeView(childView)
+                            }
+                            player_bottom_adv_banner.removeAllViews()
+                            player_bottom_adv_banner.addView(bottomTextViewAdvHint)
+                        } else {
+                            bottomBannerAdView = previousBanner
+                        }
+                        if (bottomAdvTimer == null) {
+                            setBottomAdvTimer()
+                        }
+                    }
+
+                    override fun onAdClicked() = Unit
+
+                    override fun onLeftApplication() = Unit
+
+                    override fun onReturnedToApplication() = Unit
+
+                    override fun onImpression(impressionData: ImpressionData?) = Unit
+                })
+                bannerView.loadAd(AdRequest.Builder().build())
+            }
+        } else {
+            player_bottom_adv_banner.isVisible = false
+        }
     }
 
     override fun onDestroy() {
-        bannerAdView?.destroy()
-        bannerAdView?.setBannerAdEventListener(null)
-        bannerAdView = null
+        topBannerAdView?.destroy()
+        topBannerAdView?.setBannerAdEventListener(null)
+        topBannerAdView = null
+
+        bottomBannerAdView?.destroy()
+        bottomBannerAdView?.setBannerAdEventListener(null)
+        bottomBannerAdView = null
 
         super.onDestroy()
         if (wasServiceInitialized) {
