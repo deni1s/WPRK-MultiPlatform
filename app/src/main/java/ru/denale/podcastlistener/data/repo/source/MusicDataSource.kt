@@ -9,6 +9,6 @@ interface MusicDataSource {
     fun getMusics(podcastId: String): Single<Music>
     fun getMusics(category_id: String?, offset: Int): Single<WaveResponse>
     fun getMusicsByAuthor(author_id: String?, offset: Int): Single<WaveResponse>
-    fun setTrackListened(genreId: String, authorId: String): Completable
+    fun setTrackListened(genreIds: List<String>?, authorIds: List<String>?): Completable
     fun markTrackSeen(podcastId: String): Completable
 }

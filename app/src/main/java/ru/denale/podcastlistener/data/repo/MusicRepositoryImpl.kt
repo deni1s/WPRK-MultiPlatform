@@ -53,8 +53,8 @@ class MusicRepositoryImpl(
     override fun getMusicsByAuthor(author_id: String?, offset: Int): Single<WaveResponse> =
         musicDataSource.getMusicsByAuthor(author_id, offset)
 
-    override fun setTrackListened(genreId: String, authorId: String) =
-        musicDataSource.setTrackListened(genreId, authorId)
+    override fun setTrackListened(genreIds: List<String>?, authorIds: List<String>?) =
+        musicDataSource.setTrackListened(genreIds, authorIds)
 
     override fun markTrackSeen(podcastId: String) = musicDataSource.markTrackSeen(podcastId)
 

@@ -17,9 +17,13 @@ data class Music(
     @SerializedName("author")
     val author: String,
     @SerializedName("authorId")
-    val authorId: String,
+    val authorId: String?,
+    @SerializedName("authorIds")
+    val authorIds: List<String>?,
     @SerializedName("genreId")
-    val genreId: String,
+    val genreId: String?,
+    @SerializedName("genreIds")
+    val genreIds: List<String>?,
     @SerializedName("durationString")
     val durationString: String?,
     @SerializedName("mediaUrl")

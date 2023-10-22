@@ -56,8 +56,8 @@ interface ApiService {
 
     @POST("podcasts/markListened")
     fun markTrackListened(
-        @Query("genreId") genreId: String,
-        @Query("authorId") authorId: String
+        @Query("genreIds") genreId: List<String>?,
+        @Query("authorIds") authorId: List<String>?
     ): Completable
 
     @POST("podcasts/markSeen")

@@ -36,7 +36,7 @@ class MusicAdapter(val imageLoadingService: ImageLoadingService): RecyclerView.A
         fun bind(music: Music) {
             imageLoadingService.load(img_music,music.imageUrl.orEmpty(), itemView.context)
             title_music.text = music.title
-            singer_music.text = music.author
+            singer_music.text = music.author.orEmpty()
             time_music.text = music.durationString.orEmpty()
             time_music.isVisible = !music.durationString.isNullOrEmpty()
 

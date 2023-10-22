@@ -14,7 +14,7 @@ interface MusicRepository {
     fun clearType(type: String)
     fun saveMusicList(response: WaveResponse, timestamp: Long)
     fun getMusicsByAuthor(author_id: String?, offset: Int): Single<WaveResponse>
-    fun setTrackListened(genreId: String, authorId: String): Completable
+    fun setTrackListened(genreId: List<String>?, authorId: List<String>?): Completable
     fun markTrackSeen(podcastId: String): Completable
 
     fun saveLastSessionData(type: String, id: String, currentPosition: Int?)

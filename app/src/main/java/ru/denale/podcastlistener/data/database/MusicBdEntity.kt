@@ -15,12 +15,19 @@ data class MusicBdEntity(
     val description: String?,
     @ColumnInfo(name = "createdAt")
     val createdAt: String,
+    @Deprecated("use authorIds")
     @ColumnInfo(name = "author")
     val author: String,
+    @Deprecated("use authorIds")
     @ColumnInfo(name = "authorId")
     val authorId: String,
+    @ColumnInfo(name = "authorIds")
+    val authorIds: String?,
+    @Deprecated("use genreIds")
     @ColumnInfo(name = "genreId")
     val genreId: String,
+    @ColumnInfo(name = "genreIds")
+    val genreIds: String?,
     @ColumnInfo(name = "durationString")
     val durationString: String?,
     @ColumnInfo(name = "mediaUrl")

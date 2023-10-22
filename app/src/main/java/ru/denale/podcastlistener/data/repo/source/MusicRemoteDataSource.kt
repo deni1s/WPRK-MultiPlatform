@@ -16,8 +16,8 @@ class MusicRemoteDataSource(private val apiService: ApiService) : MusicDataSourc
     override fun getMusicsByAuthor(author_id: String?, offset: Int): Single<WaveResponse> =
         apiService.getMusicsByAuthor(author_id, offset)
 
-    override fun setTrackListened(genreId: String, authorId: String) =
-        apiService.markTrackListened(genreId, authorId)
+    override fun setTrackListened(genreIds: List<String>?, authorIds: List<String>?) =
+        apiService.markTrackListened(genreIds, authorIds)
 
     override fun markTrackSeen(podcastId: String) =
         apiService.markTrackSeen(podcastId)

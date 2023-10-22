@@ -28,6 +28,7 @@ import org.koin.android.ext.koin.androidContext
 import org.koin.android.viewmodel.dsl.viewModel
 import org.koin.core.context.startKoin
 import org.koin.dsl.module
+import ru.denale.podcastlistener.data.database.MIGRATION_1_2
 
 private const val PREFERENCES_NAME = "podcast_preferences"
 private const val DATABASE_NAME = "podcast-types-db"
@@ -61,6 +62,7 @@ class App : Application() {
             single { createApiService(get()) }
             single {
                 Room.databaseBuilder(this@App, MusicDatabase::class.java, DATABASE_NAME)
+                    .addMigrations(MIGRATION_1_2)
                     .build().musicDao()
             }
             //single { database.musicDao() }

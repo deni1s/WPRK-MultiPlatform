@@ -340,7 +340,7 @@ class MusicPlayerService : Service() {
         }
         musicPosition++
         musicList[musicPosition].run {
-            checkSetListening(authorId, genreId)
+            checkSetListening(authorIds ?: authorId?.let { listOf(it) }, genreIds ?: genreId?.let { listOf(it) })
             if (shouldPlay) {
                 sendMessageToActivity(
                     MediaServiceEvent.onMusicLoading(
@@ -364,12 +364,12 @@ class MusicPlayerService : Service() {
         }
     }
 
-    private fun checkSetListening(genreId: String, authorId: String) {
+    private fun checkSetListening(genreIds: List<String>?, authorIds: List<String>?) {
         if (!wasDragged) {
             mediaPlayer?.let { player ->
                 if (player.currentPosition >= player.duration * 0.7 && !isNotified) {
                     isNotified = true
-                    setTrackListened(genreId, authorId)
+                    setTrackListened(genreIds, authorIds)
                 }
             }
         }
@@ -384,7 +384,7 @@ class MusicPlayerService : Service() {
         if (musicPosition == 0) return
         musicPosition--
         musicList[musicPosition].run {
-            checkSetListening(authorId, genreId)
+            checkSetListening(authorIds ?: authorId?.let { listOf(it) }, genreIds ?: genreId?.let { listOf(it) })
             if (shouldPlay) {
                 sendMessageToActivity(
                     MediaServiceEvent.onMusicLoading(
@@ -442,7 +442,10 @@ class MusicPlayerService : Service() {
             mediaPlayer?.setOnPreparedListener(null)
             if (!isNotified) {
                 isNotified = true
-                setTrackListened(music.genreId, music.authorId)
+                setTrackListened(
+                    music.genreId?.let { listOf(it) } ?: music.genreIds,
+                    music.authorId?.let { listOf(it) } ?: music.authorIds
+                )
             }
 
             playNextMusic(true)
@@ -455,9 +458,9 @@ class MusicPlayerService : Service() {
         }
     }
 
-    fun setTrackListened(genreId: String, authorId: String) {
+    private fun setTrackListened(genreIds: List<String>?, authorIds: List<String>?) {
         compositeDisposable.add(
-            musicRepository.setTrackListened(genreId, authorId)
+            musicRepository.setTrackListened(genreIds, authorIds)
                 .subscribeOn(Schedulers.io())
                 .observeOn(AndroidSchedulers.mainThread())
                 .onErrorComplete().subscribe({
@@ -559,7 +562,7 @@ class MusicPlayerService : Service() {
             is MediaActivityEvent.onNewDataRequired -> {
                 if (musicList.isEmpty()) return
                 val music = musicList[musicPosition]
-                checkSetListening(music.authorId, music.genreId)
+                checkSetListening(music.authorIds ?: music.genreId?.let { listOf(it) }, music.genreIds ?: music.genreId?.let { listOf(it) })
                 updateNotification(createNotification(music))
                 sendMessageToActivity(
                     MediaServiceEvent.onDataUpdate(
