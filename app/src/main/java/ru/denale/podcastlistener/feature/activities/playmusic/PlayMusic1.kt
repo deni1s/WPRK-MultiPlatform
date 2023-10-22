@@ -624,7 +624,7 @@ class PlayMusic1 : AppCompatActivity() {
         progress_player.isVisible = false
         currentMusic = music
         imageLoadingService.load(cover_music, music.imageUrl.orEmpty(), this)
-        textViewPlayerTitle.text = music.author
+        textViewPlayerTitle.text = music.author.orEmpty()
         tv_singer_music.text = music.title
         tv_time_music.isVisible = !music.durationString.isNullOrEmpty()
         tv_time_music.text = music.durationString
@@ -642,6 +642,9 @@ class PlayMusic1 : AppCompatActivity() {
     private fun populateTopAdBanner() {
         if (playMusicViewModel.isAdvertisementAllowed()) {
             val size = BannerAdSize.stickySize(this.applicationContext, resources.displayMetrics.widthPixels)
+            player_top_adv_banner.layoutParams = player_top_adv_banner.layoutParams.apply {
+                height = dpToPx(this@PlayMusic1, size.height.toFloat())
+            }
             topProgressAdv.let { childView ->
                 (childView.parent as? ViewGroup)?.removeView(childView)
             }
@@ -713,6 +716,9 @@ class PlayMusic1 : AppCompatActivity() {
     private fun populateBottomAdBanner() {
         if (playMusicViewModel.isAdvertisementAllowed()) {
             val size = BannerAdSize.stickySize(this.applicationContext, resources.displayMetrics.widthPixels)
+            player_bottom_adv_banner.layoutParams = player_bottom_adv_banner.layoutParams.apply {
+                height = dpToPx(this@PlayMusic1, size.height.toFloat())
+            }
             bottomProgressAdv.let { childView ->
                 (childView.parent as? ViewGroup)?.removeView(childView)
             }
@@ -779,6 +785,11 @@ class PlayMusic1 : AppCompatActivity() {
         } else {
             player_bottom_adv_banner.isVisible = false
         }
+    }
+
+    private fun dpToPx(context: Context, dp: Float): Int {
+        val density = context.resources.displayMetrics.density
+        return (dp * density + 0.5f).toInt()
     }
 
     override fun onDestroy() {
