@@ -613,6 +613,7 @@ class MusicPlayerService : Service() {
             }
 
             is MediaActivityEvent.onMusicRequeired -> {
+                val previousPosition = musicPosition
                 musicPosition = musicList.indexOfFirst { it == event.music }
                 updateNotification(createNotification(event.music))
                 sendMessageToActivity(
@@ -626,7 +627,7 @@ class MusicPlayerService : Service() {
                         type = initializationType
                     )
                 )
-                if (mediaPlayer?.isPlaying == true) {
+                if (mediaPlayer?.isPlaying == true || previousPosition != musicPosition) {
                     sendMessageToActivity(MediaServiceEvent.onMusicPaused)
                     sendMessageToActivity(
                         MediaServiceEvent.onMusicLoading(
