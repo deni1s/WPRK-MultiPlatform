@@ -7,6 +7,7 @@ import ru.denale.podcastlistener.common.MusicPlayerSignleObserver
 import ru.denale.podcastlistener.data.repo.MusicRepository
 import android.os.Bundle
 import androidx.lifecycle.MutableLiveData
+import com.yandex.metrica.YandexMetrica
 import ru.denale.podcastlistener.data.WaveResponse
 import ru.denale.podcastlistener.data.repo.AdvertisementRepository
 import io.reactivex.Single
@@ -52,11 +53,13 @@ class MusicsViewModel(
                 override fun onSuccess(t: WaveResponse) {
                     musicLiveData.onNext(t.podcasts)
                     t.warning?.let { warningLiveData.onNext(it) }
+                    YandexMetrica.reportEvent("AuthorPodcasts", authorId)
                 }
 
                 override fun onError(e: Throwable) {
                     super.onError(e)
                     errorLiveData.onNext("Произошла ошибка")
+                    YandexMetrica.reportEvent("AuthorPodcasts", authorId + "error: ${e.message}")
                 }
             })
     }
@@ -73,11 +76,13 @@ class MusicsViewModel(
                 override fun onSuccess(t: WaveResponse) {
                     musicLiveData.onNext(t.podcasts)
                     t.warning?.let { warningLiveData.onNext(it) }
+                    YandexMetrica.reportEvent("CategoryPodcasts", categoryId)
                 }
 
                 override fun onError(e: Throwable) {
                     super.onError(e)
                     errorLiveData.onNext("Произошла ошибка")
+                    YandexMetrica.reportEvent("CategoryPodcasts", categoryId + "error: ${e.message}")
                 }
             })
     }
@@ -95,10 +100,13 @@ class MusicsViewModel(
                 override fun onSuccess(t: WaveResponse) {
                     musicLiveData.onNext(t.podcasts)
                     t.warning?.let { warningLiveData.onNext(it) }
+                    YandexMetrica.reportEvent("WavePodcasts", type)
                 }
 
                 override fun onError(e: Throwable) {
                     super.onError(e)
+                    errorLiveData.onNext("Произошла ошибка")
+                    YandexMetrica.reportEvent("WavePodcasts", type + "error: ${e.message}")
                 }
             })
     }

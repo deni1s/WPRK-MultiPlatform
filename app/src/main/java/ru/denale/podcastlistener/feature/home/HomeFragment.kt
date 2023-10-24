@@ -238,6 +238,7 @@ class HomeFragment : MusicPlayerOnlineFragment(), MusicAdapter.SetOnClick,
                                 clearTopAdView(previousBanner)
                                 previousBanner = null
                                 main_screen_top_adv_banner.addView(bannerView)
+                                YandexMetrica.reportEvent("MainTopBanner", "success")
                             } catch (e: Exception) {
                                 YandexMetrica.reportError("HomeFragmnetError", e.message)
                             }
@@ -245,14 +246,15 @@ class HomeFragment : MusicPlayerOnlineFragment(), MusicAdapter.SetOnClick,
                     }
 
                     override fun onAdFailedToLoad(adRequestError: AdRequestError) {
-                        isTopAdvInitialized = true
-                        if (previousBanner == null) {
+                        if (previousBanner == null && !isTopAdvInitialized) {
                             clearTopAdView(topBannerAdView)
                             topBannerAdView = null
                             main_screen_top_adv_banner.addView(topTextViewAdvHint)
+                            YandexMetrica.reportEvent("MainTopBanner", "error on init")
                         } else {
                             topBannerAdView = previousBanner
                         }
+                        isTopAdvInitialized = true
                     }
 
                     override fun onAdClicked() = Unit
@@ -302,6 +304,7 @@ class HomeFragment : MusicPlayerOnlineFragment(), MusicAdapter.SetOnClick,
                                 clearBottomAdView(previousBanner)
                                 previousBanner = null
                                 main_screen_bottom_adv_banner.addView(bottomBannerAdView)
+                                YandexMetrica.reportEvent("BottomTopBanner", "success")
                             } catch (e: Exception) {
                                 YandexMetrica.reportError("HomeFragmnetError", e.message)
                             }
@@ -309,14 +312,15 @@ class HomeFragment : MusicPlayerOnlineFragment(), MusicAdapter.SetOnClick,
                     }
 
                     override fun onAdFailedToLoad(adRequestError: AdRequestError) {
-                        isBottomAdvInitialized = true
-                        if (previousBanner == null) {
+                        if (previousBanner == null && !isBottomAdvInitialized) {
                             clearBottomAdView(bottomBannerAdView)
                             bottomBannerAdView = null
                             main_screen_bottom_adv_banner.addView(bottomTextViewAdvHint)
+                            YandexMetrica.reportEvent("BottomTopBanner", "error on init")
                         } else {
                             bottomBannerAdView = previousBanner
                         }
+                        isBottomAdvInitialized = true
                     }
 
                     override fun onAdClicked() = Unit

@@ -1,6 +1,7 @@
 package ru.denale.podcastlistener.feature.authors
 
 import androidx.lifecycle.MutableLiveData
+import com.yandex.metrica.YandexMetrica
 import ru.denale.podcastlistener.common.MusicPlayerOnlineViewModel
 import ru.denale.podcastlistener.common.MusicPlayerSignleObserver
 import ru.denale.podcastlistener.data.repo.AdvertisementRepository
@@ -44,11 +45,13 @@ class AuthorsViewModel(
         getAuthorsSource(offset).subscribeOn(Schedulers.io())
             .subscribe(object : MusicPlayerSignleObserver<AuthorResponse>(compositeDisposable) {
                 override fun onSuccess(t: AuthorResponse) {
+                    YandexMetrica.reportEvent("AuthorScreen", "success")
                     authorLiveData.onNext(t)
                 }
 
                 override fun onError(e: Throwable) {
                     super.onError(e)
+                    YandexMetrica.reportEvent("AuthorScreen", "error: ${e.message}")
                     errorLiveData.onNext("Произошла ошибка")
                 }
             })

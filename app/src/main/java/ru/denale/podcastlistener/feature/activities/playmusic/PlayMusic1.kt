@@ -670,6 +670,7 @@ class PlayMusic1 : AppCompatActivity() {
                                 previousBanner = null
                                 player_top_adv_banner.addView(bannerView)
                                 if (topAdvTimer == null) {
+                                    YandexMetrica.reportEvent("PlayerTopBanner", "success on init")
                                     setTopAdvTimer()
                                 }
                             } catch (e: Exception) {
@@ -690,6 +691,9 @@ class PlayMusic1 : AppCompatActivity() {
                             }
                             player_top_adv_banner.removeAllViews()
                             player_top_adv_banner.addView(topTextViewAdvHint)
+                            if (topAdvTimer == null) {
+                                YandexMetrica.reportEvent("PlayerTopBanner", "error on init")
+                            }
                         } else {
                             topBannerAdView = previousBanner
                         }
@@ -745,6 +749,7 @@ class PlayMusic1 : AppCompatActivity() {
                                 player_bottom_adv_banner.addView(bannerView)
                                 if (bottomAdvTimer == null) {
                                     setBottomAdvTimer()
+                                    YandexMetrica.reportEvent("PlayerBottomBanner", "success on init")
                                 }
                             } catch (e: Exception) {
                                 YandexMetrica.reportError("PlayMusic1", e.message)
@@ -764,6 +769,9 @@ class PlayMusic1 : AppCompatActivity() {
                             }
                             player_bottom_adv_banner.removeAllViews()
                             player_bottom_adv_banner.addView(bottomTextViewAdvHint)
+                            if (bottomAdvTimer == null) {
+                                YandexMetrica.reportEvent("PlayerBottomBanner", "error on init")
+                            }
                         } else {
                             bottomBannerAdView = previousBanner
                         }

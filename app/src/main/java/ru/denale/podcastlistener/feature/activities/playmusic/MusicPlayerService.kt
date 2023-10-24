@@ -17,6 +17,7 @@ import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
+import com.yandex.metrica.YandexMetrica
 import ru.denale.podcastlistener.R
 import ru.denale.podcastlistener.data.Music
 import ru.denale.podcastlistener.data.repo.MusicRepository
@@ -24,6 +25,7 @@ import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.disposables.CompositeDisposable
 import io.reactivex.schedulers.Schedulers
 import org.koin.android.ext.android.inject
+import ru.denale.podcastlistener.BuildConfig
 
 
 private const val NOTIFICATION_ID = 543
@@ -519,7 +521,7 @@ class MusicPlayerService : Service() {
         if (mediaPlayer?.isPlaying == true) {
             mediaPlayer?.pause()
         }
-        mediaPlayer?.release()
+        mediaPlayer?.reset()
         mediaPlayer = null
     }
 
@@ -591,7 +593,15 @@ class MusicPlayerService : Service() {
                     initializationType = event.type
                     if (!event.podcastId.isNullOrEmpty()) {
                         musicPosition = musicList.indexOfFirst { it.id == event.podcastId }.let {
-                            if (it == -1) 0 else it
+                            if (it == -1) {
+                                if (!BuildConfig.DEBUG) {
+                                    YandexMetrica.reportError(
+                                        "updated IndexOutOfBound error 1",
+                                        event.podcastId
+                                    )
+                                }
+                                0
+                            } else it
                         }
                     }
 
@@ -614,7 +624,17 @@ class MusicPlayerService : Service() {
 
             is MediaActivityEvent.onMusicRequeired -> {
                 val previousPosition = musicPosition
-                musicPosition = musicList.indexOfFirst { it == event.music }
+                musicPosition = musicList.indexOfFirst { it.id == event.music.id }.let {
+                    if (it == -1) {
+                        if (!BuildConfig.DEBUG) {
+                            YandexMetrica.reportError(
+                                "updated IndexOutOfBound error 2",
+                                event.music.toString() + musicPosition
+                            )
+                        }
+                        0
+                    } else it
+                }
                 updateNotification(createNotification(event.music))
                 sendMessageToActivity(
                     MediaServiceEvent.onDataUpdate(

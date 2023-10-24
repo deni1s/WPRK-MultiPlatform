@@ -2,6 +2,7 @@ package ru.denale.podcastlistener.feature.activities.playmusic
 
 import android.os.Bundle
 import androidx.lifecycle.MutableLiveData
+import com.yandex.metrica.YandexMetrica
 import ru.denale.podcastlistener.LastSessionData
 import ru.denale.podcastlistener.common.*
 import ru.denale.podcastlistener.data.Music
@@ -75,12 +76,14 @@ class PlayMusicViewModel(
                     sessionLiveData.value = musicRepository.getLastSessionData(id)
                     musicLiveData.value = t.podcasts
                     titleLiveData.value = t.title ?: "Волна"
+                    YandexMetrica.reportEvent("PlayerScreen", t.type)
 //                    sharedPreferences.edit().putLong(type, Calendar.getInstance().timeInMillis)
 //                        .apply()
                 }
 
                 override fun onError(e: Throwable) {
                     super.onError(e)
+                    YandexMetrica.reportEvent("PlayerScreen", "error: ${e.message}")
                 }
             })
     }

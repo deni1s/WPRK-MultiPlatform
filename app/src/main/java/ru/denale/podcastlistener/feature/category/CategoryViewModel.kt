@@ -5,6 +5,7 @@ import ru.denale.podcastlistener.common.MusicPlayerSignleObserver
 import ru.denale.podcastlistener.data.Genre
 import ru.denale.podcastlistener.data.repo.CategoryRepository
 import androidx.lifecycle.MutableLiveData
+import com.yandex.metrica.YandexMetrica
 import ru.denale.podcastlistener.data.repo.AdvertisementRepository
 import io.reactivex.Single
 import io.reactivex.android.schedulers.AndroidSchedulers
@@ -48,11 +49,13 @@ class CategoryViewModel(
         getMainSource(offset).subscribe(object : MusicPlayerSignleObserver<GenreResponse>(compositeDisposable) {
             override fun onSuccess(t: GenreResponse) {
                 categoryLiveData.onNext(t.list)
+                YandexMetrica.reportEvent("CategoryScreen", "success")
             }
 
             override fun onError(e: Throwable) {
                 super.onError(e)
                 errorLiveData.onNext("Произошла ошибка")
+                YandexMetrica.reportEvent("CategoryScreen", "error: ${e.message}")
             }
         })
     }
