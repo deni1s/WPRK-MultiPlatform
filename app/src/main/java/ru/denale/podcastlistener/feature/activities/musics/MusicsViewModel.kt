@@ -53,13 +53,26 @@ class MusicsViewModel(
                 override fun onSuccess(t: WaveResponse) {
                     musicLiveData.onNext(t.podcasts)
                     t.warning?.let { warningLiveData.onNext(it) }
-                    YandexMetrica.reportEvent("AuthorPodcasts", authorId)
+
+                    YandexMetrica.reportEvent(
+                        "AuthorListPodcasts",
+                        mapOf(
+                            "result" to "success",
+                            "authorId" to authorId,
+                        )
+                    )
                 }
 
                 override fun onError(e: Throwable) {
                     super.onError(e)
                     errorLiveData.onNext("Произошла ошибка")
-                    YandexMetrica.reportEvent("AuthorPodcasts", authorId + "error: ${e.message}")
+                    YandexMetrica.reportEvent(
+                        "AuthorListPodcasts",
+                        mapOf(
+                            "result" to "error: ${e.message}",
+                            "authorId" to authorId,
+                        )
+                    )
                 }
             })
     }
@@ -76,20 +89,38 @@ class MusicsViewModel(
                 override fun onSuccess(t: WaveResponse) {
                     musicLiveData.onNext(t.podcasts)
                     t.warning?.let { warningLiveData.onNext(it) }
-                    YandexMetrica.reportEvent("CategoryPodcasts", categoryId)
+                    YandexMetrica.reportEvent(
+                        "CategoryListPodcasts", mapOf(
+                            "result" to "success",
+                            "categoryId" to categoryId
+                        )
+                    )
                 }
 
                 override fun onError(e: Throwable) {
                     super.onError(e)
                     errorLiveData.onNext("Произошла ошибка")
-                    YandexMetrica.reportEvent("CategoryPodcasts", categoryId + "error: ${e.message}")
+                    YandexMetrica.reportEvent(
+                        "CategoryListPodcasts",
+                        mapOf(
+                            "result" to "error: ${e.message}",
+                            "categoryId" to categoryId
+                        )
+                    )
                 }
             })
     }
 
     fun getTypeData(id: String) {
         musicRepository.getPreviousMusics(id).flatMap {
-            Single.just(WaveResponse(podcasts = it.list, title = it.title, type = it.type, warning = null))
+            Single.just(
+                WaveResponse(
+                    podcasts = it.list,
+                    title = it.title,
+                    type = it.type,
+                    warning = null
+                )
+            )
         }
             .subscribeOn(Schedulers.io())
             .observeOn(AndroidSchedulers.mainThread())
@@ -100,13 +131,13 @@ class MusicsViewModel(
                 override fun onSuccess(t: WaveResponse) {
                     musicLiveData.onNext(t.podcasts)
                     t.warning?.let { warningLiveData.onNext(it) }
-                    YandexMetrica.reportEvent("WavePodcasts", type)
+                    YandexMetrica.reportEvent("WaveListPodcasts", mapOf("result" to "success", "type" to t.type) )
                 }
 
                 override fun onError(e: Throwable) {
                     super.onError(e)
                     errorLiveData.onNext("Произошла ошибка")
-                    YandexMetrica.reportEvent("WavePodcasts", type + "error: ${e.message}")
+                    YandexMetrica.reportEvent("WaveListPodcasts", mapOf("result" to "error: ${e.message}", "type" to type) )
                 }
             })
     }

@@ -45,13 +45,13 @@ class AuthorsViewModel(
         getAuthorsSource(offset).subscribeOn(Schedulers.io())
             .subscribe(object : MusicPlayerSignleObserver<AuthorResponse>(compositeDisposable) {
                 override fun onSuccess(t: AuthorResponse) {
-                    YandexMetrica.reportEvent("AuthorScreen", "success")
+                    YandexMetrica.reportEvent("AuthorListPodcasts", "success")
                     authorLiveData.onNext(t)
                 }
 
                 override fun onError(e: Throwable) {
                     super.onError(e)
-                    YandexMetrica.reportEvent("AuthorScreen", "error: ${e.message}")
+                    YandexMetrica.reportEvent("AuthorListPodcasts", "error: ${e.message}")
                     errorLiveData.onNext("Произошла ошибка")
                 }
             })

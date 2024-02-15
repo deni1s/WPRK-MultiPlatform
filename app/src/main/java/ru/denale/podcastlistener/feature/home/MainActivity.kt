@@ -15,7 +15,7 @@ import ru.denale.podcastlistener.common.SCREEN_PODCAST_ID_DATA
 import ru.denale.podcastlistener.common.SCREEN_TITLE_DATA
 import ru.denale.podcastlistener.common.setupWithNavController
 import ru.denale.podcastlistener.feature.activities.musics.MusicsActivity
-import ru.denale.podcastlistener.feature.activities.playmusic.PlayMusic1
+import ru.denale.podcastlistener.feature.activities.playmusic.PlayMusic2
 import ru.denale.podcastlistener.services.AUTHOR_ID_KEY
 import ru.denale.podcastlistener.services.CATEGORY_ID_KEY
 import ru.denale.podcastlistener.services.PODCAST_ID_KEY
@@ -52,12 +52,12 @@ class MainActivity : AppCompatActivity() {
                 })
             }
             bundle.getString(WAVE_ID_KEY)?.let {
-                startActivity(Intent(this, PlayMusic1::class.java).apply {
+                startActivity(Intent(this, PlayMusic2::class.java).apply {
                     putExtra(EXTRA_MUSIC_TYPE, it)
                 })
             }
             bundle.getString(PODCAST_ID_KEY)?.let {
-                startActivity(Intent(this, PlayMusic1::class.java).apply {
+                startActivity(Intent(this, PlayMusic2::class.java).apply {
                     putExtra(SCREEN_PODCAST_ID_DATA, it)
                 })
             }

@@ -5,6 +5,7 @@
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
     <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_MEDIA_PLAYBACK" />
 
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
 
@@ -23,6 +24,14 @@
             android:name=".feature.activities.playmusic.MusicPlayerService"
             android:foregroundServiceType="mediaPlayback"
             android:screenOrientation="portrait" />
+        <service
+            android:name=".feature.activities.playmusic.MusicPlayerService2"
+            android:foregroundServiceType="mediaPlayback"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="androidx.media3.session.MediaSessionService"/>
+            </intent-filter>
+        </service>
 
         <service
             android:name=".services.FirebaseMessagingService"
@@ -51,6 +60,36 @@
 
         <activity
             android:name="ru.denale.podcastlistener.feature.activities.playmusic.PlayMusic1"
+            android:exported="true"
+            android:launchMode="singleTask"
+            android:screenOrientation="portrait">
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW" />
+
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+
+                <!-- Define your deep link URL here -->
+                <data
+                    android:host="@string/deeplink_path"
+                    android:pathPrefix="@string/deeplink_podcast_path"
+                    android:scheme="@string/deeplink_scheme" />
+            </intent-filter>
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW" />
+
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+
+                <data
+                    android:scheme="http"
+                    android:host="dasuccess.ru"
+                    android:pathPattern="/podcast" />
+            </intent-filter>
+        </activity>
+
+        <activity
+            android:name="ru.denale.podcastlistener.feature.activities.playmusic.PlayMusic2"
             android:exported="true"
             android:launchMode="singleTask"
             android:screenOrientation="portrait">

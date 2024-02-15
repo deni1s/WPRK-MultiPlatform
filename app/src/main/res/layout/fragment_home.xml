@@ -116,7 +116,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content" />
 
-            <FrameLayout
+            <com.yandex.mobile.ads.banner.BannerAdView
                 android:id="@+id/main_screen_top_adv_banner"
                 android:layout_height="wrap_content"
                 android:layout_width="match_parent"
@@ -124,6 +124,32 @@
                 android:minHeight="50dp"
                 android:layout_marginTop="8dp"
                 android:layout_marginBottom="8dp"/>
+
+            <TextView
+                android:id="@+id/main_screen_top_adv_banner_fail_text"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:minHeight="50dp"
+                android:layout_marginTop="8dp"
+                android:gravity="center"
+                android:paddingHorizontal="16dp"
+                android:textAppearance="@style/TextAppearance.MyTheme.Headline6"
+                android:visibility="gone"
+                android:text="Я знаю, что мир полон возможностей, и я нахожу их с легкостью."
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintTop_toTopOf="@id/main_screen_top_adv_banner"
+                app:layout_constraintBottom_toBottomOf="@id/main_screen_top_adv_banner" />
+
+            <ProgressBar
+                android:id="@+id/main_screen_top_adv_banner_progress"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:minHeight="50dp"
+                android:layout_marginTop="8dp"
+                android:progressTint="@color/yellow"
+                android:layout_gravity="center"
+                android:indeterminateTint="@color/yellow"
+                android:visibility="gone" />
 
             <View
                 android:layout_width="match_parent"
@@ -176,7 +202,7 @@
                 android:textAppearance="?textAppearanceCaption"
                 android:layout_height="wrap_content"/>
 
-            <FrameLayout
+            <com.yandex.mobile.ads.banner.BannerAdView
                 android:id="@+id/main_screen_bottom_adv_banner"
                 android:layout_height="wrap_content"
                 android:minHeight="50dp"
@@ -184,6 +210,32 @@
                 android:visibility="gone"
                 android:layout_marginTop="8dp"
                 android:layout_marginBottom="8dp"/>
+
+            <TextView
+                android:id="@+id/main_screen_bottom_adv_banner_fail_text"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:minHeight="50dp"
+                android:layout_marginTop="8dp"
+                android:gravity="center"
+                android:paddingHorizontal="16dp"
+                android:textAppearance="@style/TextAppearance.MyTheme.Headline6"
+                android:visibility="gone"
+                android:text="Я знаю, что мир полон возможностей, и я нахожу их с легкостью."
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintTop_toTopOf="@id/main_screen_bottom_adv_banner"
+                app:layout_constraintBottom_toBottomOf="@id/main_screen_bottom_adv_banner" />
+
+            <ProgressBar
+                android:id="@+id/main_screen_bottom_adv_banner_progress"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:minHeight="50dp"
+                android:layout_marginTop="8dp"
+                android:layout_gravity="center"
+                android:progressTint="@color/yellow"
+                android:indeterminateTint="@color/yellow"
+                android:visibility="gone" />
 
             <FrameLayout
                 android:id="@+id/main_screen_bottom_slider"

@@ -10,20 +10,13 @@ import android.view.ViewGroup
 import android.widget.ImageView
 import android.widget.Toast
 import androidx.fragment.app.Fragment
-import com.yandex.mobile.ads.banner.BannerAdEventListener
-import com.yandex.mobile.ads.banner.BannerAdSize
-import com.yandex.mobile.ads.banner.BannerAdView
-import com.yandex.mobile.ads.common.AdRequest
-import com.yandex.mobile.ads.common.AdRequestError
-import com.yandex.mobile.ads.common.ImpressionData
 import org.json.JSONObject
 import org.koin.android.ext.android.inject
-import ru.denale.podcastlistener.BuildConfig
 import ru.denale.podcastlistener.R
 import ru.denale.podcastlistener.common.EXTRA_KEY_DATA
 import ru.denale.podcastlistener.common.EXTRA_MUSIC_TYPE
 import ru.denale.podcastlistener.data.Banner
-import ru.denale.podcastlistener.feature.activities.playmusic.PlayMusic1
+import ru.denale.podcastlistener.feature.activities.playmusic.PlayMusic2
 import ru.denale.podcastlistener.services.ImageLoadingService
 
 class BannerFragment : Fragment() {
@@ -55,7 +48,7 @@ class BannerFragment : Fragment() {
                 "email" -> sendEmail(banner.payload.orEmpty())
                 "share" -> actionShare(banner.payload.orEmpty())
                 "display" -> {}
-                "wave" -> startActivity(Intent(requireContext(), PlayMusic1::class.java).apply {
+                "wave" -> startActivity(Intent(requireContext(), PlayMusic2::class.java).apply {
                     putExtra(EXTRA_MUSIC_TYPE, banner.id)
                 })
             }

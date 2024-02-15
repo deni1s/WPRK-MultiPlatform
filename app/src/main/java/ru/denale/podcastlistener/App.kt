@@ -29,6 +29,7 @@ import org.koin.android.viewmodel.dsl.viewModel
 import org.koin.core.context.startKoin
 import org.koin.dsl.module
 import ru.denale.podcastlistener.data.database.MIGRATION_1_2
+import ru.denale.podcastlistener.feature.activities.playmusic.PlayMusicViewModel2
 
 private const val PREFERENCES_NAME = "podcast_preferences"
 private const val DATABASE_NAME = "podcast-types-db"
@@ -47,14 +48,14 @@ class App : Application() {
         ) { Log.d(YANDEX_MOBILE_ADS_TAG, "SDK initialized") }
         MobileAds.enableDebugErrorIndicator(true)
 
-        if (!BuildConfig.DEBUG) {
+        //if (!BuildConfig.DEBUG) {
             val config =
                 YandexMetricaConfig.newConfigBuilder(BuildConfig.YANDEX_APP_METRICS).build();
             // Initializing the AppMetrica SDK.
             YandexMetrica.activate(applicationContext, config);
             // Automatic tracking of user activity.
             YandexMetrica.enableActivityAutoTracking(this)
-        }
+       // }
 
         val myModules = module {
             single { getSharedPreferences(PREFERENCES_NAME, MODE_PRIVATE) }
@@ -87,6 +88,7 @@ class App : Application() {
             viewModel { CategoryViewModel(get(), get()) }
             viewModel { (bundle: Bundle?) -> MusicsViewModel(bundle, get(), get()) }
             viewModel { (bundle: Bundle?) -> PlayMusicViewModel(bundle, get(), get()) }
+            viewModel { (bundle: Bundle?) -> PlayMusicViewModel2(bundle, get(), get()) }
         }
 
         startKoin {

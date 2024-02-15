@@ -3,6 +3,7 @@ package ru.denale.podcastlistener.feature.activities.playmusic
 import android.app.*
 import android.content.Context
 import android.content.Intent
+import android.graphics.Bitmap
 import android.media.AudioAttributes
 import android.media.MediaPlayer
 import android.net.Uri
@@ -17,15 +18,19 @@ import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
+import androidx.media3.session.MediaStyleNotificationHelper
+import com.bumptech.glide.Glide
+import com.bumptech.glide.request.target.SimpleTarget
+import com.bumptech.glide.request.transition.Transition
 import com.yandex.metrica.YandexMetrica
-import ru.denale.podcastlistener.R
-import ru.denale.podcastlistener.data.Music
-import ru.denale.podcastlistener.data.repo.MusicRepository
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.disposables.CompositeDisposable
 import io.reactivex.schedulers.Schedulers
 import org.koin.android.ext.android.inject
 import ru.denale.podcastlistener.BuildConfig
+import ru.denale.podcastlistener.R
+import ru.denale.podcastlistener.data.Music
+import ru.denale.podcastlistener.data.repo.MusicRepository
 
 
 private const val NOTIFICATION_ID = 543
@@ -37,8 +42,16 @@ const val INITIALIZATION_WITH_TYPE_COMMAND = "initializeWithType"
 const val INITIALIZATION_WITH_PREVIOUS_COMMAND = "initializeWithPrevious"
 
 sealed class InitializationType {
-    data class Type(val id: String) : InitializationType()
-    data class PodcastId(val podcastId: String) : InitializationType()
+    data class Type(val id: String) : InitializationType() {
+        override fun toString(): String {
+            return id
+        }
+    }
+    data class PodcastId(val podcastId: String) : InitializationType() {
+        override fun toString(): String {
+            return podcastId
+        }
+    }
 }
 
 class MusicPlayerService : Service() {
@@ -57,6 +70,7 @@ class MusicPlayerService : Service() {
 
     private val binder = PlayerEventBinder(eventState)
     private var isBound = false
+    private var savedBitmap: Bitmap? = null
     private val compositeDisposable = CompositeDisposable()
 
     private var musicList: List<Music> = emptyList()
@@ -86,37 +100,36 @@ class MusicPlayerService : Service() {
         startForeground(NOTIFICATION_ID, notification) // Start the service in the foreground
     }
 
-    private fun createNotification(music: Music): Notification {
+    private fun createNotification(music: Music, resource: Bitmap? = savedBitmap): Notification {
         // Build the notification using a NotificationCompat.Builder
 
         val notificationLayout = if (musicList.size == 1) {
-            getSingleMusicNotification(musicList[musicPosition])
+            getSingleMusicNotification(music, resource)
         } else {
-            getMultipleMusicNotification(musicList[musicPosition])
+            getMultipleMusicNotification(music, resource)
         }
 
         val builder = if (initializationType != null) {
             NotificationCompat.Builder(this, CHANNEL_ID)
-                .setContentTitle(music.title)
-                .setContentText(music.author)
+//                .setContentTitle(music.title)
+//                .setContentText(music.author)
                 .setSmallIcon(R.drawable.ic_baseline_monetization_on_24)
                 .setStyle(NotificationCompat.DecoratedCustomViewStyle())
                 //   .setContentIntent(getClickWholeLayoutIntent())
                 .setCustomContentView(notificationLayout)
-                .setCustomBigContentView(notificationLayout)
                 .setPriority(NotificationCompat.PRIORITY_DEFAULT)
                 .setVibrate(null)
                 .setVibrate(longArrayOf(0L))
                 .setSilent(true)
         } else {
             NotificationCompat.Builder(this, CHANNEL_ID)
-                .setContentTitle(music.title)
-                .setContentText(music.author)
+//                .setContentTitle(music.title)
+//                .setContentText(music.author)
                 .setSmallIcon(R.drawable.ic_baseline_monetization_on_24)
                 //  .setContentIntent(getClickWholeLayoutIntent())
                 .setStyle(NotificationCompat.DecoratedCustomViewStyle())
                 .setCustomContentView(notificationLayout)
-                .setCustomBigContentView(notificationLayout)
+               // .setCustomBigContentView(notificationLayout)
                 .setPriority(NotificationCompat.PRIORITY_DEFAULT)
                 .setVibrate(null)
                 .setVibrate(longArrayOf(0L))
@@ -125,11 +138,15 @@ class MusicPlayerService : Service() {
         return builder.build()
     }
 
-    private fun getSingleMusicNotification(music: Music): RemoteViews {
-        return RemoteViews(packageName, R.layout.service_single_notification_layout).apply {
+    private fun getSingleMusicNotification(music: Music, resource: Bitmap? = savedBitmap): RemoteViews {
+        return RemoteViews(packageName, R.layout.service_notification_custom_single_layout).apply {
             setTextViewText(R.id.podcact_author, music.author)
             setTextViewText(R.id.podcact_text, music.title)
-
+            if (resource != null) {
+                setImageViewBitmap(R.id.podcact_image, resource)
+            } else {
+                setImageViewResource(R.id.podcact_image, R.drawable.default_image)
+            }
             if (mediaPlayer?.isPlaying == true) {
                 setImageViewResource(R.id.play_pause, R.drawable.ic_pause)
             } else {
@@ -140,10 +157,15 @@ class MusicPlayerService : Service() {
         }
     }
 
-    private fun getMultipleMusicNotification(music: Music): RemoteViews {
-        return RemoteViews(packageName, R.layout.service_notification_layout).apply {
+    private fun getMultipleMusicNotification(music: Music, resource: Bitmap? = savedBitmap): RemoteViews {
+        return RemoteViews(packageName, R.layout.service_notification_custom_layout).apply {
             setTextViewText(R.id.podcact_author, music.author)
             setTextViewText(R.id.podcact_text, music.title)
+            if (resource != null) {
+                setImageViewBitmap(R.id.podcact_image, resource)
+            } else {
+                setImageViewResource(R.id.podcact_image, R.drawable.default_image)
+            }
 
             setOnClickPendingIntent(R.id.whole_notification_layout, getClickWholeLayoutIntent())
 
@@ -167,6 +189,21 @@ class MusicPlayerService : Service() {
             setOnClickPendingIntent(R.id.play_pause, getPlayPauseIntent())
             setOnClickPendingIntent(R.id.play_next, getClickOnNextButtonIntent())
         }
+    }
+
+    private fun loadBitmap(music: Music) {
+        Glide.with(this)
+            .asBitmap()
+            .load(music.imageUrl.orEmpty())
+            .into(object : SimpleTarget<Bitmap?>() {
+                override fun onResourceReady(
+                    resource: Bitmap,
+                    transition: Transition<in Bitmap?>?
+                ) {
+                    savedBitmap = resource
+                    updateNotification(createNotification(music, resource))
+                }
+            })
     }
 
     private fun getClickOnPreviousButtonIntent(): PendingIntent {
@@ -419,6 +456,7 @@ class MusicPlayerService : Service() {
 
     private fun playMusic(music: Music) {
         updateNotification(createNotification(music))
+        loadBitmap(music)
         isNotified = false
         wasDragged = false
         if (mediaPlayer == null) {

@@ -27,15 +27,13 @@ import com.yandex.mobile.ads.common.AdRequestError
 import com.yandex.mobile.ads.common.ImpressionData
 import ru.denale.podcastlistener.common.EXTRA_MUSIC
 import ru.denale.podcastlistener.common.SCREEN_TITLE_DATA
-import ru.denale.podcastlistener.feature.activities.playmusic.PlayMusic1
 import io.reactivex.disposables.Disposable
-import kotlinx.android.synthetic.main.activity_authors.authors_all_activity_banner
-import kotlinx.android.synthetic.main.activity_category.category_all_activity_banner
 import kotlinx.android.synthetic.main.activity_musics.*
 import org.koin.android.ext.android.inject
 import org.koin.android.viewmodel.ext.android.viewModel
 import org.koin.core.parameter.parametersOf
 import ru.denale.podcastlistener.BuildConfig
+import ru.denale.podcastlistener.feature.activities.playmusic.PlayMusic2
 
 class MusicsActivity : MusicPlayerOnlineActivity(), MusicAdapter.SetOnClick {
     val musicAdapter: MusicAdapter by inject()
@@ -145,7 +143,7 @@ class MusicsActivity : MusicPlayerOnlineActivity(), MusicAdapter.SetOnClick {
     }
 
     override fun onClick(music: Music) {
-        val intent  = Intent(this, PlayMusic1::class.java)
+        val intent  = Intent(this, PlayMusic2::class.java)
         intent.putExtra(EXTRA_MUSIC, music)
         if (musicsViewModel.type != null) {
             setResult(RESULT_OK, intent)

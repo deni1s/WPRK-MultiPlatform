@@ -1,0 +1,54 @@
+<!-- res/layout/custom_notification.xml -->
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:id="@+id/whole_notification_layout"
+    android:layout_height="wrap_content">
+
+    <ImageView
+        android:id="@+id/podcact_image"
+        android:layout_width="72dp"
+        android:layout_height="72dp"
+        android:layout_alignParentStart="true"
+        android:src="@drawable/default_image"/>
+
+    <TextView
+        android:id="@+id/podcact_author"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:ellipsize="end"
+        android:gravity="center|start"
+        android:maxLines="1"
+        android:paddingEnd="8dp"
+        android:text="@string/app_name"
+        android:textAppearance="@style/TextAppearance.Compat.Notification.Title"
+        android:textColor="@color/black3"
+        android:layout_toRightOf="@id/podcact_image"
+        android:layout_marginLeft="16dp"/>
+
+    <TextView
+        android:id="@+id/podcact_text"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:ellipsize="end"
+        android:layout_marginStart="16dp"
+        android:gravity="center|start"
+        android:paddingEnd="8dp"
+        android:text="@string/app_name"
+        android:textAppearance="@style/TextAppearance.Compat.Notification.Title"
+        android:layout_below="@id/podcact_author"
+        android:layout_toRightOf="@id/podcact_image"
+        android:layout_marginLeft="16dp"
+        android:layout_marginTop="4dp"/>
+
+    <!-- Playback controls -->
+    <ImageButton
+        android:id="@+id/play_pause"
+        android:layout_width="40dp"
+        android:layout_height="40dp"
+        android:layout_below="@id/podcact_text"
+        android:layout_centerInParent="true"
+        android:background="@drawable/round_background_button"
+        android:layout_marginTop="8dp"
+        android:src="@drawable/ic_pause" />
+
+</RelativeLayout>
