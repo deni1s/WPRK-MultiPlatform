@@ -59,20 +59,18 @@ class MusicPlayerService2 : MediaSessionService() {
                 if (isPlaying) {
                     if (player.duration != currentDuration && player.duration > 0 && currentMusic != null) {
                         currentDuration = player.duration
-                        setTimer(player.duration, player.currentPosition, currentMusic)
+                        setTimer(player.duration, currentMusic)
                     } else {
-                        setTimer(player.duration, player.currentPosition, currentMusic)
+                        setTimer(player.duration, currentMusic)
                     }
                 } else {
                     timer?.cancel()
-                    if (timer != null) {
-                        if (currentType != null && currentType != currentMusic?.id) {
-                            musicRepository.saveLastSessionData(
-                                currentType!!,
-                                currentMusic?.id.orEmpty(),
-                                player.currentPosition.toInt()
-                            )
-                        }
+                    if (timer != null && currentType?.contains("wave") == true) {
+                        musicRepository.saveLastSessionData(
+                            currentType!!,
+                            currentMusic?.id.orEmpty(),
+                            player.currentPosition.toInt()
+                        )
                     }
                 }
             }
@@ -94,9 +92,8 @@ class MusicPlayerService2 : MediaSessionService() {
         })
     }
 
-    private fun setTimer(duration: Long, position: Long, music: Music?) {
+    private fun setTimer(duration: Long, music: Music?) {
         if (!markListenedSent) {
-            val time = (duration * 0.7).toLong() - position
             timer = Timer()
             timer?.schedule(object : TimerTask() {
                 override fun run() {

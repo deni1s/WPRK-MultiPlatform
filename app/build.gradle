@@ -17,8 +17,8 @@ android {
         applicationId "ru.denale.podcastlistener"
         minSdkVersion 21
         targetSdkVersion 34
-        versionCode 28
-        versionName "1.5"
+        versionCode 29
+        versionName "1.5.1"
 
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
     }

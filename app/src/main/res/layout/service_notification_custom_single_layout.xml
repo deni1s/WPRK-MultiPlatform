@@ -47,7 +47,6 @@
         android:layout_height="40dp"
         android:layout_below="@id/podcact_text"
         android:layout_centerInParent="true"
-        android:background="@drawable/round_background_button"
         android:layout_marginTop="8dp"
         android:src="@drawable/ic_pause" />
 

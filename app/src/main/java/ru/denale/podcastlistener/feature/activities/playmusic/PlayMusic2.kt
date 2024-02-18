@@ -1,7 +1,6 @@
 package ru.denale.podcastlistener.feature.activities.playmusic
 
 import android.Manifest
-import android.app.ActivityManager
 import android.content.ComponentName
 import android.content.Context
 import android.content.Intent
@@ -72,19 +71,17 @@ class PlayMusic2 : AppCompatActivity() {
 
     //   private var musicPlayerServiceIntent: Intent? = null
     private var timer: Timer? = null
-    private var sessionData: SessionData? = null
     private var isAdvertisementAvialable = true
     private var musicList: List<Music> = emptyList()
     private var type: String? = null
     private var currentPosition: Int = 0
-    private var firstEnterProgress: Long = 0
     private var cameFromList: Boolean = false
     private var startForResult = registerForActivityResult(
         ActivityResultContracts.StartActivityForResult()
     ) { result: ActivityResult ->
         if (result.resultCode == RESULT_OK) {
             result.data?.extras?.getParcelable<Music>(EXTRA_MUSIC)?.let { music ->
-                currentPosition = musicList.indexOf(music)
+                currentPosition = musicList.indexOfFirst { it.id == music.id }
                 routeToSelectedPodcastFromList()
                 cameFromList = true
             }
@@ -122,34 +119,61 @@ class PlayMusic2 : AppCompatActivity() {
             MediaController.Builder(this, sessionToken!!).buildAsync()
         controllerFuture!!.addListener({
             mediaController = controllerFuture!!.get()
-            when {
-                cameFromList -> {
-                    cameFromList = false
-                    if (mediaController?.mediaItemCount == 0) {
-                        setMediaItems(musicList, currentPosition, 0)
+            if (cameFromList) {
+                cameFromList = false
+                if (mediaController?.mediaItemCount == 0) {
+                    setMediaItems(musicList, currentPosition, 0)
+                    mediaController?.play()
+                } else {
+                    routeToSelectedPodcastFromList()
+                    displayMusicInfoItem(mediaController?.currentMediaItem)
+                }
+            } else {
+                playMusicViewModel.musicLiveData.observe(this) { data ->
+                    progress_player.isVisible = false
+                    musicList = data.list
+                    type = data.session?.waveId ?: data.singlePodcastId
+                    if (data.session != null) {
+                        setMenuClickListener(data.session.waveId)
+                    }
+                    if (!isSameType(type)) {
+                        mediaController?.pause()
+                        val music = musicList.firstOrNull { it.id == data.session?.podcastId }
+                            ?: musicList.first()
+                        currentPosition = musicList.indexOf(music)
+                        setMediaItems(
+                            musicList,
+                            currentPosition,
+                            data.session?.progress?.toLong() ?: 0L
+                        )
                         mediaController?.play()
                     } else {
-                        routeToSelectedPodcastFromList()
+                        currentPosition = mediaController?.currentMediaItemIndex ?: 0
                         displayMusicInfoItem(mediaController?.currentMediaItem)
-                    }
-                }
-
-                !isSameType(type) -> {
-                    setMediaItems(musicList, currentPosition, firstEnterProgress)
-                }
-
-                else -> {
-                    displayMusicInfoItem(mediaController?.currentMediaItem)
-                    if (mediaController?.isPlaying == true) {
-                        setTimer()
-                        btn_play_music.setImageResource(R.drawable.ic_pause)
-                    } else {
-                        btn_play_music.setImageResource(R.drawable.ic_play)
+                        restoreMediaState()
+                        mediaController?.play()
                     }
                 }
             }
             mediaController?.addListener(futureListener)
         }, MoreExecutors.directExecutor())
+    }
+
+    private fun restoreMediaState() {
+        if (mediaController?.currentMediaItem != null) {
+            slider.valueFrom = 0.0f
+            slider.valueTo = mediaController?.duration?.toFloat()?.takeIf { it > 0F } ?: 0f
+            mediaController?.currentPosition?.takeIf { it > slider.valueFrom }
+                ?.toFloat()?.let {
+                    slider.value = it
+                }
+        }
+        //if (mediaController?.isPlaying == true) {
+            setTimer()
+            btn_play_music.setImageResource(R.drawable.ic_pause)
+//        } else {
+//            btn_play_music.setImageResource(R.drawable.ic_play)
+//        }
     }
 
     private fun seekTo(position: Int) {
@@ -209,18 +233,6 @@ class PlayMusic2 : AppCompatActivity() {
         setContentView(R.layout.activity_play_music)
         if (savedInstanceState == null) {
             populateTopAdBanner()
-        }
-        playMusicViewModel.musicLiveData.observe(this) { data ->
-            progress_player.isVisible = false
-            musicList = data.list
-            type = data.singlePodcastId ?: data.session?.waveId
-            if (data.session != null) {
-                setMenuClickListener(data.session.waveId)
-            }
-            val music = musicList.firstOrNull { it.id == data.session?.podcastId }
-                ?: musicList.first()
-            currentPosition = musicList.indexOf(music)
-            firstEnterProgress = sessionData?.progress ?: 0L
         }
 
         playMusicViewModel.isAdvertisementAvailableData.observe(this) {
@@ -298,7 +310,6 @@ class PlayMusic2 : AppCompatActivity() {
 
     override fun onStop() {
         super.onStop()
-        firstEnterProgress = 0L
         mediaController?.removeListener(futureListener)
         mediaController?.release()
         timer?.cancel()
@@ -313,23 +324,27 @@ class PlayMusic2 : AppCompatActivity() {
     private fun setMediaItems(musics: List<Music>, position: Int, progress: Long) {
         if (musics.isNotEmpty()) {
             val mediaItems = musics.mapIndexed { index, music ->
-                MediaItem.Builder()
-                    .setMediaId(music.id)
-                    .setUri(music.mediaUrl)
-                    .setMediaMetadata(
-                        MediaMetadata.Builder()
-                            .setArtist(music.author)
-                            .setExtras(getMusicExtra(music, index == 0, index == musics.lastIndex))
-                            .setTitle(music.title)
-                            .setArtworkUri(Uri.parse(music.imageUrl))
-                            .build()
-                    )
-                    .build()
+                music.toMediaItem(index == 0, index == musics.lastIndex)
             }
             mediaController?.setMediaItems(mediaItems, position, progress)
             mediaController?.prepare()
             displayMusicInfoItem(mediaItems[position])
         }
+    }
+
+    private fun Music.toMediaItem(isFirst: Boolean, isLast: Boolean): MediaItem {
+        return MediaItem.Builder()
+            .setMediaId(id)
+            .setUri(mediaUrl)
+            .setMediaMetadata(
+                MediaMetadata.Builder()
+                    .setArtist(author)
+                    .setExtras(getMusicExtra(this, isFirst, isLast))
+                    .setTitle(title)
+                    .setArtworkUri(Uri.parse(imageUrl))
+                    .build()
+            )
+            .build()
     }
 
     private fun isSameType(type: String?): Boolean {
@@ -378,32 +393,6 @@ class PlayMusic2 : AppCompatActivity() {
         } else "%02d:%02d:%02d".format(hours, minutes, remainingSeconds)
     }
 
-    private fun displayMusicInfo(music: Music, isFirst: Boolean, isLast: Boolean) {
-        progress_player.isVisible = false
-        currentPosition = musicList.indexOf(music)
-        imageLoadingService.load(cover_music, music.imageUrl.orEmpty(), this)
-        textViewPlayerTitle.text = music.author.orEmpty()
-        tv_singer_music.text = music.title
-        tv_time_music.isVisible = !music.durationString.isNullOrEmpty()
-        tv_time_music.text = music.durationString
-
-        btn_skip_next.isVisible = !isLast
-        btn_skip_previous.isVisible = !isFirst
-
-        slider.valueFrom = 0.000000000000000F
-        mediaController?.duration?.let { position ->
-            if (position > 0) {
-                mediaController?.duration?.toFloat()
-            }
-        }
-
-        timer?.cancel()
-
-        player_screen_warning.isVisible = !music.warningDescription.isNullOrEmpty()
-        player_screen_warning.text = music.warningDescription.orEmpty()
-        //  btn_play_music.setImageResource(R.drawable.ic_play)
-    }
-
     private fun displayMusicInfoItem(mediaItem: MediaItem?) {
         progress_player.isVisible = false
         val music = mediaItem?.mediaMetadata?.extras?.getParcelable<Music>("mediaItem")
@@ -422,9 +411,6 @@ class PlayMusic2 : AppCompatActivity() {
         slider.valueFrom = 0.000000000000000F
         mediaController?.duration?.toFloat()?.takeIf { it > slider.valueFrom }?.let {
             slider.valueTo = it
-        }
-        mediaController?.currentPosition?.takeIf { it > slider.valueFrom }?.toFloat()?.let {
-            slider.value = it
         }
 
         player_screen_warning.isVisible = !music?.warningDescription.isNullOrEmpty()

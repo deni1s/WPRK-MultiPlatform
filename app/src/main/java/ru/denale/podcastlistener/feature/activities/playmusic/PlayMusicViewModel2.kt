@@ -51,7 +51,7 @@ class PlayMusicViewModel2(
         return advertisementRepository.isAdvertisementAllowed()
     }
 
-    fun getTypeData(id: String) {
+    private fun getTypeData(id: String) {
         musicRepository.getPreviousMusics(id).flatMap {
             if (shouldUpdateWave(it.time)) {
                 musicRepository.clearSessionData(id)
