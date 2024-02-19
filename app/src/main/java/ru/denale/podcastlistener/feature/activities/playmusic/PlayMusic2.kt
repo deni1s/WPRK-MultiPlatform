@@ -169,8 +169,8 @@ class PlayMusic2 : AppCompatActivity() {
                 }
         }
         //if (mediaController?.isPlaying == true) {
-            setTimer()
-            btn_play_music.setImageResource(R.drawable.ic_pause)
+        setTimer()
+        btn_play_music.setImageResource(R.drawable.ic_pause)
 //        } else {
 //            btn_play_music.setImageResource(R.drawable.ic_play)
 //        }
@@ -204,19 +204,23 @@ class PlayMusic2 : AppCompatActivity() {
         }
 
         override fun onEvents(player: Player, events: Player.Events) {
-            Log.d("eventPlaye", events.get(0).toString())
             super.onEvents(player, events)
-            if (events.contains(Player.EVENT_IS_LOADING_CHANGED) || events.contains(Player.EVENT_TRACKS_CHANGED)) {
+            if (events.contains(Player.EVENT_IS_LOADING_CHANGED) || events.contains(Player.EVENT_TRACKS_CHANGED) || events.contains(
+                    Player.EVENT_PLAYBACK_STATE_CHANGED
+                )
+            ) {
                 if (player.duration > 0) {
-                    player.currentPosition.let { slider.value = it.toFloat() }
                     slider.valueTo = player.duration.toFloat()
-                }
-            }
-
-            if (events.contains(Player.EVENT_PLAYBACK_STATE_CHANGED) || events.contains(Player.EVENT_TRACKS_CHANGED)) {
-                if (player.duration > 0) {
-                    player.currentPosition.let { slider.value = it.toFloat() }
-                    slider.valueTo = player.duration.toFloat()
+                    player.currentPosition.let {
+                        if (slider.valueTo >= it) {
+                            slider.value = it.toFloat()
+                        } else {
+                            YandexMetrica.reportError(
+                                "Max slider value error",
+                                "Player duration: ${player.duration}, currentValue: ${player.currentPosition}"
+                            )
+                        }
+                    }
                 }
             }
         }
@@ -451,6 +455,10 @@ class PlayMusic2 : AppCompatActivity() {
                     }
 
                     override fun onAdFailedToLoad(adRequestError: AdRequestError) {
+                        if (isDestroyed) {
+                            bannerView.destroy()
+                            return
+                        }
                         player_top_adv_banner_fail_text.isVisible = true
                         player_top_adv_banner_progress.isVisible = false
                         player_top_adv_banner.visibility = View.INVISIBLE

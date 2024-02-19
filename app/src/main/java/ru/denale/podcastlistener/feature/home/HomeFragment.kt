@@ -171,6 +171,9 @@ class HomeFragment : MusicPlayerOnlineFragment(), MusicAdapter.SetOnClick,
                     }
 
                     override fun onAdFailedToLoad(adRequestError: AdRequestError) {
+                        if (isDetached) {
+                            return
+                        }
                         main_screen_top_adv_banner.isVisible = false
                         main_screen_top_adv_banner_fail_text.isVisible = true
                         main_screen_top_adv_banner_progress.isVisible = false
@@ -224,6 +227,9 @@ class HomeFragment : MusicPlayerOnlineFragment(), MusicAdapter.SetOnClick,
                     }
 
                     override fun onAdFailedToLoad(adRequestError: AdRequestError) {
+                        if (isDetached) {
+                            return
+                        }
                         main_screen_bottom_adv_banner.isVisible = false
                         main_screen_bottom_adv_banner_fail_text.isVisible = true
                         main_screen_bottom_adv_banner_progress.isVisible = false

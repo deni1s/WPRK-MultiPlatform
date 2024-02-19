@@ -173,6 +173,10 @@ class AuthorsActivity : MusicPlayerOnlineActivity(), AuthorsAdapter.OnClickAutho
                     }
 
                     override fun onAdFailedToLoad(adRequestError: AdRequestError) {
+                        if (isDestroyed) {
+                            bannerView.destroy()
+                            return
+                        }
                         if (previousBanner == null) {
                             clearAdView(bannerAdView)
                             bannerAdView = null

@@ -79,7 +79,7 @@ fun createApiService(client: OkHttpClient): ApiService {
 
 fun createClient(application: Application, sharedPreferences: SharedPreferences): OkHttpClient {
     val client = OkHttpClient.Builder()
-        .addInterceptor(AppInfoInterceptor(getAppVersionName(application), sharedPreferences))
+        .addInterceptor(AppInfoInterceptor(getAppVersionName(application), application, sharedPreferences))
         .followRedirects(true)
         .followSslRedirects(true)
         .retryOnConnectionFailure(true)

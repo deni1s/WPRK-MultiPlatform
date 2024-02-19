@@ -530,6 +530,10 @@ class PlayMusic1 : AppCompatActivity() {
                     }
 
                     override fun onAdFailedToLoad(adRequestError: AdRequestError) {
+                        if (isDestroyed) {
+                            bannerView.destroy()
+                            return
+                        }
                         player_top_adv_banner_fail_text.isVisible = true
                         player_top_adv_banner_progress.isVisible = false
                         player_top_adv_banner.visibility = INVISIBLE
