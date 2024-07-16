@@ -15,41 +15,41 @@ import android.view.ViewGroup
 import androidx.recyclerview.widget.GridLayoutManager
 import ru.denale.podcastlistener.feature.adapter.EndlessScroll
 import io.reactivex.disposables.Disposable
-import kotlinx.android.synthetic.main.activity_musics.*
-import kotlinx.android.synthetic.main.fragment_category.*
 import org.koin.android.ext.android.inject
 import org.koin.android.viewmodel.ext.android.viewModel
+import ru.denale.podcastlistener.databinding.FragmentCategoryBinding
 
 @Deprecated("Это для боттом шита, сам экран на активити")
 class CategoryFragment : MusicPlayerOnlineFragment(),CategoryAdapter.OnClickCategory {
     val categoryViewModel: CategoryViewModel by viewModel()
     val categoryAdapter:CategoryAdapter by inject()
     private var disposable: Disposable? = null
+    private lateinit var binding: FragmentCategoryBinding
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View? {
-        // Inflate the layout for this fragment
-        return inflater.inflate(R.layout.fragment_category, container, false)
+        binding = FragmentCategoryBinding.inflate(inflater, container, false)
+        return binding.root
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        recycle_category_all.post {
+        binding.recycleCategoryAll.post {
             val sColumnWidth = 110
-            val spanCount = Math.floor((recycle_category_all.width / convertDpToPixel(sColumnWidth.toFloat(),requireContext())).toDouble()).toInt()
+            val spanCount = Math.floor((binding.recycleCategoryAll.width / convertDpToPixel(sColumnWidth.toFloat(),requireContext())).toDouble()).toInt()
             categoryViewModel.setRowsCount(spanCount)
             val layoutManager = GridLayoutManager(requireContext(), spanCount)
-            recycle_category_all.layoutManager = layoutManager
-            recycle_category_all.adapter = categoryAdapter
+            binding.recycleCategoryAll.layoutManager = layoutManager
+            binding.recycleCategoryAll.adapter = categoryAdapter
 
             val endlessScrollListener = object : EndlessScroll(layoutManager) {
                 override fun onLoadMore(page: Int, totalItemsCount: Int) {
                     categoryViewModel.loanNextNewsPart(totalItemsCount)
                 }
             }
-            recycle_category_all!!.addOnScrollListener(endlessScrollListener)
+            binding.recycleCategoryAll!!.addOnScrollListener(endlessScrollListener)
 
         }
         categoryAdapter.onClickCategory = this

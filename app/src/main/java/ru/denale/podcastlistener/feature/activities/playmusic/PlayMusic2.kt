@@ -7,7 +7,6 @@ import android.content.Intent
 import android.content.pm.PackageManager
 import android.net.Uri
 import android.os.Bundle
-import android.util.Log
 import android.view.View
 import android.widget.Toast
 import androidx.activity.result.ActivityResult
@@ -25,28 +24,12 @@ import androidx.media3.session.SessionToken
 import com.google.android.material.slider.Slider
 import com.google.common.util.concurrent.ListenableFuture
 import com.google.common.util.concurrent.MoreExecutors
-import com.yandex.metrica.YandexMetrica
 import com.yandex.mobile.ads.banner.BannerAdEventListener
 import com.yandex.mobile.ads.banner.BannerAdSize
 import com.yandex.mobile.ads.common.AdRequest
 import com.yandex.mobile.ads.common.AdRequestError
 import com.yandex.mobile.ads.common.ImpressionData
-import kotlinx.android.synthetic.main.activity_play_music.btn_play_music
-import kotlinx.android.synthetic.main.activity_play_music.btn_skip_next
-import kotlinx.android.synthetic.main.activity_play_music.btn_skip_previous
-import kotlinx.android.synthetic.main.activity_play_music.cover_music
-import kotlinx.android.synthetic.main.activity_play_music.img_back_playMusic
-import kotlinx.android.synthetic.main.activity_play_music.img_list_screen
-import kotlinx.android.synthetic.main.activity_play_music.player_screen_warning
-import kotlinx.android.synthetic.main.activity_play_music.player_top_adv_banner
-import kotlinx.android.synthetic.main.activity_play_music.player_top_adv_banner_fail_text
-import kotlinx.android.synthetic.main.activity_play_music.player_top_adv_banner_progress
-import kotlinx.android.synthetic.main.activity_play_music.progress_player
-import kotlinx.android.synthetic.main.activity_play_music.slider
-import kotlinx.android.synthetic.main.activity_play_music.textViewPlayerTitle
-import kotlinx.android.synthetic.main.activity_play_music.tv_singer_music
-import kotlinx.android.synthetic.main.activity_play_music.tv_time_music
-import kotlinx.android.synthetic.main.activity_play_music.tv_time_playing
+import io.appmetrica.analytics.AppMetrica
 import org.koin.android.ext.android.inject
 import org.koin.android.viewmodel.ext.android.viewModel
 import org.koin.core.parameter.parametersOf
@@ -56,6 +39,7 @@ import ru.denale.podcastlistener.common.EXTRA_MUSIC
 import ru.denale.podcastlistener.common.EXTRA_MUSIC_TYPE
 import ru.denale.podcastlistener.common.convertMillisToString
 import ru.denale.podcastlistener.data.Music
+import ru.denale.podcastlistener.databinding.ActivityPlayMusicBinding
 import ru.denale.podcastlistener.feature.activities.musics.MusicsActivity
 import ru.denale.podcastlistener.services.ImageLoadingService
 import java.util.Timer
@@ -87,6 +71,8 @@ class PlayMusic2 : AppCompatActivity() {
             }
         }
     }
+    private lateinit var binding: ActivityPlayMusicBinding
+
 
     private fun routeToSelectedPodcastFromList() {
         seekTo(currentPosition)
@@ -130,7 +116,7 @@ class PlayMusic2 : AppCompatActivity() {
                 }
             } else {
                 playMusicViewModel.musicLiveData.observe(this) { data ->
-                    progress_player.isVisible = false
+                    binding.progressPlayer.isVisible = false
                     musicList = data.list
                     type = data.session?.waveId ?: data.singlePodcastId
                     if (data.session != null) {
@@ -161,23 +147,23 @@ class PlayMusic2 : AppCompatActivity() {
 
     private fun restoreMediaState() {
         if (mediaController?.currentMediaItem != null) {
-            slider.valueFrom = 0.0f
-            slider.valueTo = mediaController?.duration?.toFloat()?.takeIf { it > 0F } ?: 0f
-            mediaController?.currentPosition?.takeIf { it > slider.valueFrom }
+            binding.slider.valueFrom = 0.0f
+            binding.slider.valueTo = mediaController?.duration?.toFloat()?.takeIf { it > 0F } ?: 0f
+            mediaController?.currentPosition?.takeIf { it > binding.slider.valueFrom && it <= binding.slider.valueTo }
                 ?.toFloat()?.let {
-                    slider.value = it
+                    binding.slider.value = it
                 }
         }
         //if (mediaController?.isPlaying == true) {
         setTimer()
-        btn_play_music.setImageResource(R.drawable.ic_pause)
+        binding.btnPlayMusic.setImageResource(R.drawable.ic_pause)
 //        } else {
 //            btn_play_music.setImageResource(R.drawable.ic_play)
 //        }
     }
 
     private fun seekTo(position: Int) {
-        slider.value = 0F
+        binding.slider.value = 0F
         mediaController?.seekTo(position, 0L)
     }
 
@@ -186,10 +172,10 @@ class PlayMusic2 : AppCompatActivity() {
             super.onIsPlayingChanged(isPlaying)
             if (isPlaying) {
                 setTimer()
-                btn_play_music.setImageResource(R.drawable.ic_pause)
+                binding.btnPlayMusic.setImageResource(R.drawable.ic_pause)
             } else {
                 timer?.cancel()
-                btn_play_music.setImageResource(R.drawable.ic_play)
+                binding.btnPlayMusic.setImageResource(R.drawable.ic_play)
             }
         }
 
@@ -197,9 +183,9 @@ class PlayMusic2 : AppCompatActivity() {
             super.onMediaItemTransition(mediaItem, reason)
             displayMusicInfoItem(mediaItem)
             if (mediaController?.isPlaying == true) {
-                btn_play_music.setImageResource(R.drawable.ic_pause)
+                binding.btnPlayMusic.setImageResource(R.drawable.ic_pause)
             } else {
-                btn_play_music.setImageResource(R.drawable.ic_play)
+                binding.btnPlayMusic.setImageResource(R.drawable.ic_play)
             }
         }
 
@@ -210,12 +196,12 @@ class PlayMusic2 : AppCompatActivity() {
                 )
             ) {
                 if (player.duration > 0) {
-                    slider.valueTo = player.duration.toFloat()
+                    binding.slider.valueTo = player.duration.toFloat()
                     player.currentPosition.let {
-                        if (slider.valueTo >= it) {
-                            slider.value = it.toFloat()
+                        if (binding.slider.valueTo >= it) {
+                            binding.slider.value = it.toFloat()
                         } else {
-                            YandexMetrica.reportError(
+                            AppMetrica.reportError(
                                 "Max slider value error",
                                 "Player duration: ${player.duration}, currentValue: ${player.currentPosition}"
                             )
@@ -234,7 +220,9 @@ class PlayMusic2 : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_play_music)
+        binding = ActivityPlayMusicBinding.inflate(layoutInflater)
+        val view = binding.root
+        setContentView(view)
         if (savedInstanceState == null) {
             populateTopAdBanner()
         }
@@ -243,15 +231,15 @@ class PlayMusic2 : AppCompatActivity() {
             isAdvertisementAvialable = it
         }
 
-        playMusicViewModel.titleLiveData.observe(this) { textViewPlayerTitle.text = it }
+        playMusicViewModel.titleLiveData.observe(this) { binding.textViewPlayerTitle.text = it }
 
-        img_back_playMusic.setOnClickListener { finish() }
+        binding.imgBackPlayMusic.setOnClickListener { finish() }
 
-        slider.addOnChangeListener(Slider.OnChangeListener { slider, value, fromUser ->
-            tv_time_playing.text = convertMillisToString(value.toLong())
+        binding.slider.addOnChangeListener(Slider.OnChangeListener { slider, value, fromUser ->
+            binding.tvTimePlaying.text = convertMillisToString(value.toLong())
         })
 
-        slider.addOnSliderTouchListener(
+        binding.slider.addOnSliderTouchListener(
             object : Slider.OnSliderTouchListener {
                 override fun onStartTrackingTouch(slider: Slider) = Unit
 
@@ -260,7 +248,7 @@ class PlayMusic2 : AppCompatActivity() {
                 }
             })
 
-        btn_play_music.setOnClickListener {
+        binding.btnPlayMusic.setOnClickListener {
             timer?.cancel()
             if (mediaController?.isPlaying == true) {
                 mediaController?.pause()
@@ -268,19 +256,19 @@ class PlayMusic2 : AppCompatActivity() {
                 mediaController?.play()
             }
         }
-        btn_skip_previous.setOnClickListener {
-            slider.value = 0F
+        binding.btnSkipPrevious.setOnClickListener {
+            binding.slider.value = 0F
             mediaController?.seekToPrevious()
         }
-        btn_skip_next.setOnClickListener {
-            slider.value = 0F
+        binding.btnSkipNext.setOnClickListener {
+            binding.slider.value = 0F
             mediaController?.seekToNext()
         }
     }
 
     private fun setMenuClickListener(type: String) {
-        img_list_screen.isVisible = true
-        img_list_screen.setOnClickListener {
+        binding.imgListScreen.isVisible = true
+        binding.imgListScreen.setOnClickListener {
             startForResult.launch(Intent(this, MusicsActivity::class.java).apply {
                 putExtra(EXTRA_MUSIC_TYPE, type)
             })
@@ -299,12 +287,12 @@ class PlayMusic2 : AppCompatActivity() {
             override fun run() {
                 runOnUiThread {
                     try {
-                        val newValue = slider.value + 1000
-                        if (slider.valueTo > newValue) {
-                            slider.value = newValue
+                        val newValue =  binding.slider.value + 1000
+                        if ( binding.slider.valueTo > newValue) {
+                            binding.slider.value = newValue
                         }
                     } catch (e: Exception) {
-                        YandexMetrica.reportError("slider error 1", e.message)
+                        AppMetrica.reportError("slider error 1", e.message)
                     }
                 }
             }
@@ -384,41 +372,30 @@ class PlayMusic2 : AppCompatActivity() {
         }
     }
 
-    private fun convertSecondsToMMSS(millisSeconds: Long): String {
-        val hours = TimeUnit.MILLISECONDS.toHours(millisSeconds)
-        val minutes =
-            TimeUnit.MILLISECONDS.toMinutes(millisSeconds) - TimeUnit.HOURS.toMinutes(hours)
-        val remainingSeconds =
-            TimeUnit.MILLISECONDS.toSeconds(millisSeconds) - TimeUnit.HOURS.toSeconds(hours) - TimeUnit.MINUTES.toSeconds(
-                minutes
-            )
-        return if (hours == 0L) {
-            "%02d:%02d".format(minutes, remainingSeconds)
-        } else "%02d:%02d:%02d".format(hours, minutes, remainingSeconds)
-    }
+
 
     private fun displayMusicInfoItem(mediaItem: MediaItem?) {
-        progress_player.isVisible = false
+        binding.progressPlayer.isVisible = false
         val music = mediaItem?.mediaMetadata?.extras?.getParcelable<Music>("mediaItem")
         val isFirst = mediaItem?.mediaMetadata?.extras?.getBoolean("isFirst") ?: true
         val isLast = mediaItem?.mediaMetadata?.extras?.getBoolean("isLast") ?: true
 
-        imageLoadingService.load(cover_music, music?.imageUrl.orEmpty(), this)
-        textViewPlayerTitle.text = music?.author.orEmpty()
-        tv_singer_music.text = music?.title
-        tv_time_music.isVisible = !music?.durationString.isNullOrEmpty()
-        tv_time_music.text = music?.durationString
+        imageLoadingService.load(binding.coverMusic , music?.imageUrl.orEmpty(), this)
+        binding.textViewPlayerTitle.text = music?.author.orEmpty()
+        binding.tvSingerMusic.text = music?.title
+        binding.tvTimeMusic.isVisible = !music?.durationString.isNullOrEmpty()
+        binding.tvTimeMusic.text = music?.durationString
 
-        btn_skip_next.isVisible = !isLast
-        btn_skip_previous.isVisible = !isFirst
+        binding.btnSkipNext.isVisible = !isLast
+        binding.btnSkipPrevious.isVisible = !isFirst
 
-        slider.valueFrom = 0.000000000000000F
-        mediaController?.duration?.toFloat()?.takeIf { it > slider.valueFrom }?.let {
-            slider.valueTo = it
+        binding.slider.valueFrom = 0.000000000000000F
+        mediaController?.duration?.toFloat()?.takeIf { it > binding.slider.valueFrom }?.let {
+            binding.slider.valueTo = it
         }
 
-        player_screen_warning.isVisible = !music?.warningDescription.isNullOrEmpty()
-        player_screen_warning.text = music?.warningDescription.orEmpty()
+        binding.playerScreenWarning.isVisible = !music?.warningDescription.isNullOrEmpty()
+        binding.playerScreenWarning.text = music?.warningDescription.orEmpty()
     }
 
     private fun populateTopAdBanner() {
@@ -427,13 +404,13 @@ class PlayMusic2 : AppCompatActivity() {
                 this.applicationContext,
                 resources.displayMetrics.widthPixels
             )
-            player_top_adv_banner.layoutParams = player_top_adv_banner.layoutParams.apply {
+            binding.playerTopAdvBanner.layoutParams = binding.playerTopAdvBanner.layoutParams.apply {
                 height = dpToPx(this@PlayMusic2, size.height.toFloat())
             }
-            player_top_adv_banner_fail_text.isVisible = false
-            player_top_adv_banner_progress.isVisible = true
-            player_top_adv_banner.isVisible = true
-            player_top_adv_banner.also { bannerView ->
+            binding.playerTopAdvBannerFailText.isVisible = false
+            binding.playerTopAdvBannerProgress.isVisible = true
+            binding.playerTopAdvBanner.isVisible = true
+            binding.playerTopAdvBanner.also { bannerView ->
                 bannerView.setAdSize(size)
                 bannerView.setAdUnitId(BuildConfig.PLAYER_TOP_AD_UNIT_ID)
                 bannerView.setBannerAdEventListener(object : BannerAdEventListener {
@@ -442,16 +419,16 @@ class PlayMusic2 : AppCompatActivity() {
                         // must call destroy and return or you may get a memory leak.
                         // Note `isDestroyed` is a method on Activity.
 
-                        player_top_adv_banner_fail_text.isVisible = false
-                        player_top_adv_banner_progress.isVisible = false
+                        binding.playerTopAdvBannerFailText.isVisible = false
+                        binding.playerTopAdvBannerProgress.isVisible = false
                         if (isDestroyed) {
                             bannerView.destroy()
                             return
                         } else {
-                            YandexMetrica.reportEvent("PlayerTopBanner", "success on init")
+                            AppMetrica.reportEvent("PlayerTopBanner", "success on init")
                         }
-                        player_top_adv_banner.forceLayout()
-                        player_top_adv_banner.requestLayout()
+                        binding.playerTopAdvBanner.forceLayout()
+                        binding.playerTopAdvBanner.requestLayout()
                     }
 
                     override fun onAdFailedToLoad(adRequestError: AdRequestError) {
@@ -459,10 +436,10 @@ class PlayMusic2 : AppCompatActivity() {
                             bannerView.destroy()
                             return
                         }
-                        player_top_adv_banner_fail_text.isVisible = true
-                        player_top_adv_banner_progress.isVisible = false
-                        player_top_adv_banner.visibility = View.INVISIBLE
-                        YandexMetrica.reportEvent("PlayerTopBanner", "error on init")
+                        binding.playerTopAdvBannerFailText.isVisible = true
+                        binding.playerTopAdvBannerProgress.isVisible = false
+                        binding.playerTopAdvBanner.visibility = View.INVISIBLE
+                        AppMetrica.reportEvent("PlayerTopBanner", "error on init")
                     }
 
                     override fun onAdClicked() = Unit
@@ -476,7 +453,7 @@ class PlayMusic2 : AppCompatActivity() {
                 bannerView.loadAd(AdRequest.Builder().build())
             }
         } else {
-            player_top_adv_banner.isVisible = false
+            binding.playerTopAdvBanner.isVisible = false
         }
     }
 
@@ -486,8 +463,8 @@ class PlayMusic2 : AppCompatActivity() {
     }
 
     override fun onDestroy() {
-        player_top_adv_banner?.destroy()
-        player_top_adv_banner?.setBannerAdEventListener(null)
+        binding.playerTopAdvBanner.destroy()
+        binding.playerTopAdvBanner.setBannerAdEventListener(null)
 
         super.onDestroy()
         timer?.cancel()

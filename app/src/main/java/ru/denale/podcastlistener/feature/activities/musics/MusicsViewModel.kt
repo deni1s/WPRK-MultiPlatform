@@ -7,7 +7,7 @@ import ru.denale.podcastlistener.common.MusicPlayerSignleObserver
 import ru.denale.podcastlistener.data.repo.MusicRepository
 import android.os.Bundle
 import androidx.lifecycle.MutableLiveData
-import com.yandex.metrica.YandexMetrica
+import io.appmetrica.analytics.AppMetrica
 import ru.denale.podcastlistener.data.WaveResponse
 import ru.denale.podcastlistener.data.repo.AdvertisementRepository
 import io.reactivex.Single
@@ -54,7 +54,7 @@ class MusicsViewModel(
                     musicLiveData.onNext(t.podcasts)
                     t.warning?.let { warningLiveData.onNext(it) }
 
-                    YandexMetrica.reportEvent(
+                    AppMetrica.reportEvent(
                         "AuthorListPodcasts",
                         mapOf(
                             "result" to "success",
@@ -66,7 +66,7 @@ class MusicsViewModel(
                 override fun onError(e: Throwable) {
                     super.onError(e)
                     errorLiveData.onNext("Произошла ошибка")
-                    YandexMetrica.reportEvent(
+                    AppMetrica.reportEvent(
                         "AuthorListPodcasts",
                         mapOf(
                             "result" to "error: ${e.message}",
@@ -89,7 +89,7 @@ class MusicsViewModel(
                 override fun onSuccess(t: WaveResponse) {
                     musicLiveData.onNext(t.podcasts)
                     t.warning?.let { warningLiveData.onNext(it) }
-                    YandexMetrica.reportEvent(
+                    AppMetrica.reportEvent(
                         "CategoryListPodcasts", mapOf(
                             "result" to "success",
                             "categoryId" to categoryId
@@ -100,7 +100,7 @@ class MusicsViewModel(
                 override fun onError(e: Throwable) {
                     super.onError(e)
                     errorLiveData.onNext("Произошла ошибка")
-                    YandexMetrica.reportEvent(
+                    AppMetrica.reportEvent(
                         "CategoryListPodcasts",
                         mapOf(
                             "result" to "error: ${e.message}",
@@ -131,13 +131,13 @@ class MusicsViewModel(
                 override fun onSuccess(t: WaveResponse) {
                     musicLiveData.onNext(t.podcasts)
                     t.warning?.let { warningLiveData.onNext(it) }
-                    YandexMetrica.reportEvent("WaveListPodcasts", mapOf("result" to "success", "type" to t.type) )
+                    AppMetrica.reportEvent("WaveListPodcasts", mapOf("result" to "success", "type" to t.type) )
                 }
 
                 override fun onError(e: Throwable) {
                     super.onError(e)
                     errorLiveData.onNext("Произошла ошибка")
-                    YandexMetrica.reportEvent("WaveListPodcasts", mapOf("result" to "error: ${e.message}", "type" to type) )
+                    AppMetrica.reportEvent("WaveListPodcasts", mapOf("result" to "error: ${e.message}", "type" to type) )
                 }
             })
     }

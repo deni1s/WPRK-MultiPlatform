@@ -6,7 +6,7 @@ import androidx.media3.common.Player
 import androidx.media3.exoplayer.ExoPlayer
 import androidx.media3.session.MediaSession
 import androidx.media3.session.MediaSessionService
-import com.yandex.metrica.YandexMetrica
+import io.appmetrica.analytics.AppMetrica
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.disposables.CompositeDisposable
 import io.reactivex.schedulers.Schedulers
@@ -43,7 +43,7 @@ class MusicPlayerService2 : MediaSessionService() {
                 markListenedSent = false
                 listenedDuration = 0L
                 markTrackSeen(music?.id)
-                YandexMetrica.reportEvent(
+                AppMetrica.reportEvent(
                     "PlayerScreen",
                     mapOf(
                         "result" to "success",

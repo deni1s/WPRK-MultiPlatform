@@ -2,7 +2,7 @@ package ru.denale.podcastlistener.feature.activities.playmusic
 
 import android.os.Bundle
 import androidx.lifecycle.MutableLiveData
-import com.yandex.metrica.YandexMetrica
+import io.appmetrica.analytics.AppMetrica
 import io.reactivex.Single
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.schedulers.Schedulers
@@ -84,14 +84,14 @@ class PlayMusicViewModel2(
                     val session = musicRepository.getLastSessionData(id)
                     musicLiveData.value = MusicState(t.podcasts, null, session)
                     titleLiveData.value = t.title ?: "Волна"
-                    YandexMetrica.reportEvent("PlayerScreen", t.type)
+                    AppMetrica.reportEvent("PlayerScreen", t.type)
 //                    sharedPreferences.edit().putLong(type, Calendar.getInstance().timeInMillis)
 //                        .apply()
                 }
 
                 override fun onError(e: Throwable) {
                     super.onError(e)
-                    YandexMetrica.reportEvent("PlayerScreen", "error: ${e.message}")
+                    AppMetrica.reportEvent("PlayerScreen", "error: ${e.message}")
                 }
             })
     }

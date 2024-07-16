@@ -39,7 +39,7 @@ class AppInfoInterceptor(
     @Throws(IOException::class)
     override fun intercept(chain: Interceptor.Chain): Response {
         var request: Request = chain.request()
-        val url: HttpUrl = request.url().newBuilder()
+        val url: HttpUrl = request.url.newBuilder()
             .addQueryParameter("appVersion", version)
             .addQueryParameter("userId", userId)
             .addQueryParameter("os", "android")

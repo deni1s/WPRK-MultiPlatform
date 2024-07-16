@@ -9,7 +9,6 @@ import androidx.coordinatorlayout.widget.CoordinatorLayout
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModel
 import io.reactivex.disposables.CompositeDisposable
-import kotlinx.android.synthetic.main.loading_view.view.*
 
 abstract class MusicPlayerOnlineViewModel : ViewModel() {
     val compositeDisposable = CompositeDisposable()

@@ -48,10 +48,6 @@ class CategoryAdapter(val imageLoadingService: ImageLoadingService) :
             CATEGORY_VIEW_TYPE -> CategoryViewHolder(
                 LayoutInflater.from(parent.context).inflate(R.layout.category_item, parent, false)
             )
-            ADV_VIEW_TYPE -> AdvViewHolder(
-                LayoutInflater.from(parent.context)
-                    .inflate(R.layout.advertisement_item, parent, false)
-            )
             else -> CategoryViewHolder(
                 LayoutInflater.from(parent.context).inflate(R.layout.category_item, parent, false)
             )
@@ -75,7 +71,6 @@ class CategoryAdapter(val imageLoadingService: ImageLoadingService) :
     override fun onBindViewHolder(holder: ViewHolder, position: Int) {
         when (holder) {
             is CategoryAdapter.CategoryViewHolder -> holder.bindCategory(categoryArray[position] as Genre)
-            is AdvViewHolder -> holder.bindCategory(categoryArray[position] as NativeAd)
         }
     }
 }

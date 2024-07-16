@@ -6,14 +6,13 @@ import android.util.Log
 import androidx.room.Room
 import com.bumptech.glide.annotation.GlideModule
 import com.bumptech.glide.module.AppGlideModule
-import com.yandex.metrica.YandexMetrica
-import com.yandex.metrica.YandexMetricaConfig
 import com.yandex.mobile.ads.common.MobileAds
+import io.appmetrica.analytics.AppMetrica
+import io.appmetrica.analytics.AppMetricaConfig
 import ru.denale.podcastlistener.data.database.MusicDatabase
 import ru.denale.podcastlistener.data.repo.*
 import ru.denale.podcastlistener.data.repo.source.*
 import ru.denale.podcastlistener.feature.activities.musics.MusicsViewModel
-import ru.denale.podcastlistener.feature.activities.playmusic.PlayMusicViewModel
 import ru.denale.podcastlistener.feature.adapter.AuthorsAdapter
 import ru.denale.podcastlistener.feature.adapter.CategoryAdapter
 import ru.denale.podcastlistener.feature.adapter.MusicAdapter
@@ -49,13 +48,13 @@ class App : Application() {
         MobileAds.enableDebugErrorIndicator(true)
 
         //if (!BuildConfig.DEBUG) {
-            val config =
-                YandexMetricaConfig.newConfigBuilder(BuildConfig.YANDEX_APP_METRICS).build();
-            // Initializing the AppMetrica SDK.
-            YandexMetrica.activate(applicationContext, config);
-            // Automatic tracking of user activity.
-            YandexMetrica.enableActivityAutoTracking(this)
-       // }
+        val config =
+            AppMetricaConfig.newConfigBuilder(BuildConfig.YANDEX_APP_METRICS).build();
+        // Initializing the AppMetrica SDK.
+        AppMetrica.activate(applicationContext, config);
+        // Automatic tracking of user activity.
+        AppMetrica.enableActivityAutoTracking(this)
+        // }
 
         val myModules = module {
             single { getSharedPreferences(PREFERENCES_NAME, MODE_PRIVATE) }
@@ -87,7 +86,6 @@ class App : Application() {
             viewModel { AuthorsViewModel(get(), get()) }
             viewModel { CategoryViewModel(get(), get()) }
             viewModel { (bundle: Bundle?) -> MusicsViewModel(bundle, get(), get()) }
-            viewModel { (bundle: Bundle?) -> PlayMusicViewModel(bundle, get(), get()) }
             viewModel { (bundle: Bundle?) -> PlayMusicViewModel2(bundle, get(), get()) }
         }
 

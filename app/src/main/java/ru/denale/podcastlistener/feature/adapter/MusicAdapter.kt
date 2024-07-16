@@ -13,8 +13,6 @@ import androidx.appcompat.widget.AppCompatTextView
 import androidx.core.view.isVisible
 import androidx.recyclerview.widget.RecyclerView
 import androidx.recyclerview.widget.RecyclerView.ViewHolder
-import com.yandex.mobile.ads.nativeads.NativeAd
-import ru.denale.podcastlistener.data.Author
 
 private const val PODCAST_VIEW_TYPE = 1
 private const val ADV_VIEW_TYPE = 2
@@ -52,10 +50,6 @@ class MusicAdapter(val imageLoadingService: ImageLoadingService): RecyclerView.A
             PODCAST_VIEW_TYPE -> PodcastViewHolder(
                 LayoutInflater.from(parent.context).inflate(R.layout.music_item, parent, false)
             )
-            ADV_VIEW_TYPE -> HorizontalAdvViewHolder(
-                LayoutInflater.from(parent.context)
-                    .inflate(R.layout.horizontal_advertisement_item, parent, false)
-            )
             else -> PodcastViewHolder(
                 LayoutInflater.from(parent.context).inflate(R.layout.music_item, parent, false)
             )
@@ -65,14 +59,12 @@ class MusicAdapter(val imageLoadingService: ImageLoadingService): RecyclerView.A
     override fun onBindViewHolder(holder: ViewHolder, position: Int) {
         when (holder) {
             is MusicAdapter.PodcastViewHolder -> holder.bind(authorsArray[position] as Music)
-            is HorizontalAdvViewHolder -> holder.bindCategory(authorsArray[position] as NativeAd)
         }
     }
 
     override fun getItemViewType(position: Int): Int {
         return when (authorsArray[position]) {
             is Music -> PODCAST_VIEW_TYPE
-            is NativeAd -> ADV_VIEW_TYPE
             else -> -1
         }
     }

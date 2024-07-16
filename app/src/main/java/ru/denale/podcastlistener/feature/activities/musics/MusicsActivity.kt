@@ -18,21 +18,21 @@ import android.widget.TextView
 import androidx.core.view.isVisible
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
-import com.yandex.metrica.YandexMetrica
 import com.yandex.mobile.ads.banner.BannerAdEventListener
 import com.yandex.mobile.ads.banner.BannerAdSize
 import com.yandex.mobile.ads.banner.BannerAdView
 import com.yandex.mobile.ads.common.AdRequest
 import com.yandex.mobile.ads.common.AdRequestError
 import com.yandex.mobile.ads.common.ImpressionData
+import io.appmetrica.analytics.AppMetrica
 import ru.denale.podcastlistener.common.EXTRA_MUSIC
 import ru.denale.podcastlistener.common.SCREEN_TITLE_DATA
 import io.reactivex.disposables.Disposable
-import kotlinx.android.synthetic.main.activity_musics.*
 import org.koin.android.ext.android.inject
 import org.koin.android.viewmodel.ext.android.viewModel
 import org.koin.core.parameter.parametersOf
 import ru.denale.podcastlistener.BuildConfig
+import ru.denale.podcastlistener.databinding.ActivityMusicsBinding
 import ru.denale.podcastlistener.feature.activities.playmusic.PlayMusic2
 
 class MusicsActivity : MusicPlayerOnlineActivity(), MusicAdapter.SetOnClick {
@@ -40,6 +40,8 @@ class MusicsActivity : MusicPlayerOnlineActivity(), MusicAdapter.SetOnClick {
     val musicsViewModel: MusicsViewModel by viewModel { parametersOf(intent.extras) }
     private var disposable: MutableList<Disposable> = mutableListOf()
     private var bannerAdView: BannerAdView? = null
+    private lateinit var binding: ActivityMusicsBinding
+
     private val textViewAdvHint by lazy {
         TextView(this).apply {
             text = "События моей жизни – это ступени к большему успеху и счастью."
@@ -69,45 +71,47 @@ class MusicsActivity : MusicPlayerOnlineActivity(), MusicAdapter.SetOnClick {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_musics)
+        binding = ActivityMusicsBinding.inflate(layoutInflater)
+        val view = binding.root
+        setContentView(view)
         populateAdBanner()
         intent.getStringExtra(SCREEN_TITLE_DATA)?.let {
-            textViewMusicTitle.text = it
+            binding.textViewMusicTitle.text = it
         }
 
         val layoutManager = LinearLayoutManager(this, RecyclerView.VERTICAL, false)
-        recycle_musics_all.layoutManager = layoutManager
-        recycle_musics_all.adapter = musicAdapter
+        binding.recycleMusicsAll.layoutManager = layoutManager
+        binding.recycleMusicsAll.adapter = musicAdapter
         val endlessScrollListener = object : EndlessScroll(layoutManager) {
             override fun onLoadMore(page: Int, totalItemsCount: Int) {
                 musicsViewModel.loanNextNewsPart(totalItemsCount)
             }
         }
-        recycle_musics_all!!.addOnScrollListener(endlessScrollListener)
+        binding.recycleMusicsAll.addOnScrollListener(endlessScrollListener)
 
         musicAdapter.setOnClick = this
         disposable.add(musicsViewModel.musicLiveData.subscribe {
             musicAdapter.authorsArray.addAll(it)
             musicAdapter.notifyItemRangeChanged(musicAdapter.authorsArray.size, it.size)
-            text_view_empty_music.isVisible = musicAdapter.authorsArray.isEmpty()
-            progress_music_list_activity.isVisible = false
-            music_list_screen_warning
+            binding.textViewEmptyMusic.isVisible = musicAdapter.authorsArray.isEmpty()
+            binding.progressMusicListActivity.isVisible = false
+            binding.musicListScreenWarning
         })
 
         disposable.add(musicsViewModel.warningLiveData.subscribe {
-            music_list_screen_warning.isVisible = true
-            music_list_screen_warning.text = it
+            binding.musicListScreenWarning.isVisible = true
+            binding.musicListScreenWarning.text = it
         })
 
         disposable.add(musicsViewModel.errorLiveData.subscribe {
             if (musicAdapter.authorsArray.isEmpty()) {
-                text_view_empty_music.isVisible = true
-                text_view_empty_music.text = it
-                progress_music_list_activity.isVisible = false
+                binding.textViewEmptyMusic.isVisible = true
+                binding.textViewEmptyMusic.text = it
+                binding.progressMusicListActivity.isVisible = false
             }
         })
 
-        img_back_musics.setOnClickListener {
+        binding.imgBackMusics.setOnClickListener {
             finish()
         }
     }
@@ -127,7 +131,7 @@ class MusicsActivity : MusicPlayerOnlineActivity(), MusicAdapter.SetOnClick {
         textViewAdvHint.let { childView ->
             (childView.parent as? ViewGroup)?.removeView(childView)
         }
-        music_list_adv_banner.removeAllViews()
+        binding.musicListAdvBanner.removeAllViews()
         bannerAdView?.destroy()
         bannerAdView?.setBannerAdEventListener(null)
     }
@@ -163,10 +167,10 @@ class MusicsActivity : MusicPlayerOnlineActivity(), MusicAdapter.SetOnClick {
                 (childView.parent as? ViewGroup)?.removeView(childView)
             }
             if (bannerAdView == null) {
-                music_list_adv_banner.layoutParams = music_list_adv_banner.layoutParams.apply {
+                binding.musicListAdvBanner.layoutParams = binding.musicListAdvBanner.layoutParams.apply {
                     height = dpToPx(this@MusicsActivity, size.height.toFloat())
                 }
-                music_list_adv_banner.addView(progressAdv)
+                binding.musicListAdvBanner.addView(progressAdv)
             }
             var previousBanner = bannerAdView
             bannerAdView = BannerAdView(this).also { bannerView ->
@@ -185,9 +189,9 @@ class MusicsActivity : MusicPlayerOnlineActivity(), MusicAdapter.SetOnClick {
                             try {
                                 clearAdView(previousBanner)
                                 previousBanner = null
-                                music_list_adv_banner.addView(bannerView)
+                                binding.musicListAdvBanner.addView(bannerView)
                             } catch (e: Exception) {
-                                YandexMetrica.reportError("PlayMusic1", e.message)
+                                AppMetrica.reportError("PlayMusic1", e.message)
                             }
                         }
                     }
@@ -206,8 +210,8 @@ class MusicsActivity : MusicPlayerOnlineActivity(), MusicAdapter.SetOnClick {
                             progressAdv.let { childView ->
                                 (childView.parent as? ViewGroup)?.removeView(childView)
                             }
-                            music_list_adv_banner.removeAllViews()
-                            music_list_adv_banner.addView(textViewAdvHint)
+                            binding.musicListAdvBanner.removeAllViews()
+                            binding.musicListAdvBanner.addView(textViewAdvHint)
                         } else {
                             bannerAdView = previousBanner
                         }
@@ -224,7 +228,7 @@ class MusicsActivity : MusicPlayerOnlineActivity(), MusicAdapter.SetOnClick {
                 bannerView.loadAd(AdRequest.Builder().build())
             }
         } else {
-            music_list_adv_banner.isVisible = false
+            binding.musicListAdvBanner.isVisible = false
         }
     }
 

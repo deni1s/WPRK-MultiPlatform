@@ -12,13 +12,13 @@ import android.widget.ProgressBar
 import android.widget.TextView
 import androidx.core.view.isVisible
 import androidx.recyclerview.widget.GridLayoutManager
-import com.yandex.metrica.YandexMetrica
 import com.yandex.mobile.ads.banner.BannerAdEventListener
 import com.yandex.mobile.ads.banner.BannerAdSize
 import com.yandex.mobile.ads.banner.BannerAdView
 import com.yandex.mobile.ads.common.AdRequest
 import com.yandex.mobile.ads.common.AdRequestError
 import com.yandex.mobile.ads.common.ImpressionData
+import io.appmetrica.analytics.AppMetrica
 import ru.denale.podcastlistener.R
 import ru.denale.podcastlistener.common.EXTRA_AUTHOR_ID_KEY_DATA
 import ru.denale.podcastlistener.common.MusicPlayerOnlineActivity
@@ -30,13 +30,10 @@ import ru.denale.podcastlistener.feature.adapter.AuthorsAdapter
 import ru.denale.podcastlistener.feature.adapter.EndlessScroll
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.disposables.Disposable
-import kotlinx.android.synthetic.main.activity_authors.*
-import kotlinx.android.synthetic.main.activity_category.img_back_category
-import kotlinx.android.synthetic.main.activity_category.recycle_category_all_activity
-import kotlinx.android.synthetic.main.activity_category.textViewEmpty
 import org.koin.android.ext.android.inject
 import org.koin.android.viewmodel.ext.android.viewModel
 import ru.denale.podcastlistener.BuildConfig
+import ru.denale.podcastlistener.databinding.ActivityAuthorsBinding
 
 
 class AuthorsActivity : MusicPlayerOnlineActivity(), AuthorsAdapter.OnClickAuthor {
@@ -45,6 +42,7 @@ class AuthorsActivity : MusicPlayerOnlineActivity(), AuthorsAdapter.OnClickAutho
     private var disposable: Disposable? = null
     private lateinit var endlessScrollListener: EndlessScroll
     private var bannerAdView: BannerAdView? = null
+    private lateinit var binding: ActivityAuthorsBinding
 
     private val textViewAdvHint by lazy {
         TextView(this).apply {
@@ -75,28 +73,30 @@ class AuthorsActivity : MusicPlayerOnlineActivity(), AuthorsAdapter.OnClickAutho
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_authors)
+        binding = ActivityAuthorsBinding.inflate(layoutInflater)
+        val view = binding.root
+        setContentView(view)
         populateAdBanner()
-        progress_all_authors_activity.isVisible = true
-        recycle_category_all_activity.post {
+        binding.progressAllAuthorsActivity.isVisible = true
+        binding.recycleCategoryAllActivity.post {
             val sColumnWidth = 110
             val spanCount = Math.floor(
-                (recycle_category_all_activity.width / convertDpToPixel(
+                (binding.recycleCategoryAllActivity.width / convertDpToPixel(
                     sColumnWidth.toFloat(),
                     this
                 )).toDouble()
             ).toInt()
             autorsViewModel.setRowsCount(spanCount)
             val layoutManager = GridLayoutManager(this, spanCount)
-            recycle_category_all_activity.layoutManager = layoutManager
-            recycle_category_all_activity.adapter = authorsAdapter
+            binding.recycleCategoryAllActivity.layoutManager = layoutManager
+            binding.recycleCategoryAllActivity.adapter = authorsAdapter
 
             endlessScrollListener = object : EndlessScroll(layoutManager) {
                 override fun onLoadMore(page: Int, totalItemsCount: Int) {
                     autorsViewModel.loanNextNewsPart(totalItemsCount)
                 }
             }
-            recycle_category_all_activity!!.addOnScrollListener(endlessScrollListener)
+            binding.recycleCategoryAllActivity!!.addOnScrollListener(endlessScrollListener)
         }
 
         disposable =
@@ -104,26 +104,26 @@ class AuthorsActivity : MusicPlayerOnlineActivity(), AuthorsAdapter.OnClickAutho
                 //     val previousSize = authorsAdapter.authorsArray.size
                 authorsAdapter.authorsArray.addAll(it.list)
                 authorsAdapter.notifyDataSetChanged()
-                textViewEmpty.isVisible = authorsAdapter.authorsArray.isEmpty()
-                progress_all_authors_activity.isVisible = false
-                authors_screen_warning.isVisible = !it.warning.isNullOrEmpty()
-                authors_screen_warning.text = it.warning.orEmpty()
+                binding.textViewEmpty.isVisible = authorsAdapter.authorsArray.isEmpty()
+                binding.progressAllAuthorsActivity.isVisible = false
+                binding.authorsScreenWarning.isVisible = !it.warning.isNullOrEmpty()
+                binding.authorsScreenWarning.text = it.warning.orEmpty()
                 //   authorsAdapter.notifyItemRangeChanged(previousSize, authorsAdapter.authorsArray.size)
             }
 
         disposable =
             autorsViewModel.errorLiveData.observeOn(AndroidSchedulers.mainThread()).subscribe {
                 if (authorsAdapter.authorsArray.isEmpty()) {
-                    textViewEmpty.isVisible = true
-                    textViewEmpty.text = it
-                    progress_all_authors_activity.isVisible = false
+                    binding.textViewEmpty.isVisible = true
+                    binding.textViewEmpty.text = it
+                    binding.progressAllAuthorsActivity.isVisible = false
                 }
                 //   authorsAdapter.notifyItemRangeChanged(previousSize, authorsAdapter.authorsArray.size)
             }
 
         authorsAdapter.onAuthorClicked = this
 
-        img_back_category.setOnClickListener {
+        binding.imgBackCategory.setOnClickListener {
             finish()
         }
     }
@@ -143,10 +143,10 @@ class AuthorsActivity : MusicPlayerOnlineActivity(), AuthorsAdapter.OnClickAutho
                 (childView.parent as? ViewGroup)?.removeView(childView)
             }
             if (bannerAdView == null) {
-                authors_all_activity_banner.layoutParams = authors_all_activity_banner.layoutParams.apply {
+                binding.authorsAllActivityBanner.layoutParams = binding.authorsAllActivityBanner.layoutParams.apply {
                     height = dpToPx(this@AuthorsActivity, size.height.toFloat())
                 }
-                authors_all_activity_banner.addView(progressAdv)
+                binding.authorsAllActivityBanner.addView(progressAdv)
             }
             var previousBanner = bannerAdView
             bannerAdView = BannerAdView(this).also { bannerView ->
@@ -165,9 +165,9 @@ class AuthorsActivity : MusicPlayerOnlineActivity(), AuthorsAdapter.OnClickAutho
                             try {
                                 clearAdView(previousBanner)
                                 previousBanner = null
-                                authors_all_activity_banner.addView(bannerView)
+                                binding.authorsAllActivityBanner.addView(bannerView)
                             } catch (e: Exception) {
-                                YandexMetrica.reportError("PlayMusic1", e.message)
+                                AppMetrica.reportError("PlayMusic1", e.message)
                             }
                         }
                     }
@@ -186,8 +186,8 @@ class AuthorsActivity : MusicPlayerOnlineActivity(), AuthorsAdapter.OnClickAutho
                             progressAdv.let { childView ->
                                 (childView.parent as? ViewGroup)?.removeView(childView)
                             }
-                            authors_all_activity_banner.removeAllViews()
-                            authors_all_activity_banner.addView(textViewAdvHint)
+                            binding.authorsAllActivityBanner.removeAllViews()
+                            binding.authorsAllActivityBanner.addView(textViewAdvHint)
                         } else {
                             bannerAdView = previousBanner
                         }
@@ -204,7 +204,7 @@ class AuthorsActivity : MusicPlayerOnlineActivity(), AuthorsAdapter.OnClickAutho
                 bannerView.loadAd(AdRequest.Builder().build())
             }
         } else {
-            authors_all_activity_banner.isVisible = false
+            binding.authorsAllActivityBanner.isVisible = false
         }
     }
 
@@ -218,7 +218,7 @@ class AuthorsActivity : MusicPlayerOnlineActivity(), AuthorsAdapter.OnClickAutho
         textViewAdvHint.let { childView ->
             (childView.parent as? ViewGroup)?.removeView(childView)
         }
-        authors_all_activity_banner.removeAllViews()
+        binding.authorsAllActivityBanner.removeAllViews()
         bannerAdView?.destroy()
         bannerAdView?.setBannerAdEventListener(null)
     }

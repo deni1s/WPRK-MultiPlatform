@@ -19,30 +19,28 @@ import android.widget.ProgressBar
 import android.widget.TextView
 import androidx.core.view.isVisible
 import androidx.recyclerview.widget.GridLayoutManager
-import com.yandex.metrica.YandexMetrica
 import com.yandex.mobile.ads.banner.BannerAdEventListener
 import com.yandex.mobile.ads.banner.BannerAdSize
 import com.yandex.mobile.ads.banner.BannerAdView
 import com.yandex.mobile.ads.common.AdRequest
 import com.yandex.mobile.ads.common.AdRequestError
 import com.yandex.mobile.ads.common.ImpressionData
+import io.appmetrica.analytics.AppMetrica
 import ru.denale.podcastlistener.common.SCREEN_TITLE_DATA
 import ru.denale.podcastlistener.feature.adapter.EndlessScroll
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.disposables.Disposable
-import kotlinx.android.synthetic.main.activity_category.*
-import kotlinx.android.synthetic.main.activity_category.img_back_category
-import kotlinx.android.synthetic.main.activity_category.recycle_category_all_activity
-import kotlinx.android.synthetic.main.activity_category.textViewEmpty
 import org.koin.android.ext.android.inject
 import org.koin.android.viewmodel.ext.android.viewModel
 import ru.denale.podcastlistener.BuildConfig
+import ru.denale.podcastlistener.databinding.ActivityCategoryBinding
 
 class CategoryActivity : MusicPlayerOnlineActivity(), CategoryAdapter.OnClickCategory {
     val categoryAdapter: CategoryAdapter by inject()
     val categoryViewModel: CategoryViewModel by viewModel()
     private var disposable: Disposable? = null
     private var bannerAdView: BannerAdView? = null
+    private lateinit var binding: ActivityCategoryBinding
 
     private val textViewAdvHint by lazy {
         TextView(this).apply {
@@ -73,12 +71,14 @@ class CategoryActivity : MusicPlayerOnlineActivity(), CategoryAdapter.OnClickCat
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_category)
+        binding = ActivityCategoryBinding.inflate(layoutInflater)
+        val view = binding.root
+        setContentView(view)
         populateAdBanner()
-        recycle_category_all_activity.post {
+        binding.recycleCategoryAllActivity.post {
             val sColumnWidth = 110
             val spanCount = Math.floor(
-                (recycle_category_all_activity.width / convertDpToPixel(
+                (binding.recycleCategoryAllActivity.width / convertDpToPixel(
                     sColumnWidth.toFloat(),
                     this
                 )).toDouble()
@@ -86,35 +86,35 @@ class CategoryActivity : MusicPlayerOnlineActivity(), CategoryAdapter.OnClickCat
             categoryViewModel.setRowsCount(spanCount)
             val layoutManager = GridLayoutManager(this, spanCount)
 
-            recycle_category_all_activity.layoutManager = layoutManager
-            recycle_category_all_activity.adapter = categoryAdapter
+            binding.recycleCategoryAllActivity.layoutManager = layoutManager
+            binding.recycleCategoryAllActivity.adapter = categoryAdapter
             val endlessScrollListener = object : EndlessScroll(layoutManager) {
                 override fun onLoadMore(page: Int, totalItemsCount: Int) {
                     categoryViewModel.loanNextNewsPart(totalItemsCount)
                 }
             }
-            recycle_category_all_activity!!.addOnScrollListener(endlessScrollListener)
+            binding.recycleCategoryAllActivity.addOnScrollListener(endlessScrollListener)
         }
 
         disposable = categoryViewModel.categoryLiveData.subscribe {
             categoryAdapter.categoryArray.addAll(it)
             categoryAdapter.notifyDataSetChanged()
-            textViewEmpty.isVisible = categoryAdapter.categoryArray.isEmpty()
-            progress_all_category_activity.isVisible = false
+            binding.textViewEmpty.isVisible = categoryAdapter.categoryArray.isEmpty()
+            binding.progressAllCategoryActivity.isVisible = false
         }
 
         disposable =
             categoryViewModel.errorLiveData.observeOn(AndroidSchedulers.mainThread()).subscribe {
                 if (categoryAdapter.categoryArray.isEmpty()) {
-                    textViewEmpty.isVisible = true
-                    textViewEmpty.text = it
-                    progress_all_category_activity.isVisible = false
+                    binding.textViewEmpty.isVisible = true
+                    binding.textViewEmpty.text = it
+                    binding.recycleCategoryAllActivity.isVisible = false
                 }
                 //   authorsAdapter.notifyItemRangeChanged(previousSize, authorsAdapter.authorsArray.size)
             }
         categoryAdapter.onClickCategory = this
 
-        img_back_category.setOnClickListener {
+        binding.imgBackCategory.setOnClickListener {
             finish()
         }
     }
@@ -134,10 +134,10 @@ class CategoryActivity : MusicPlayerOnlineActivity(), CategoryAdapter.OnClickCat
                 (childView.parent as? ViewGroup)?.removeView(childView)
             }
             if (bannerAdView == null) {
-                category_all_activity_banner.layoutParams = category_all_activity_banner.layoutParams.apply {
+                binding.categoryAllActivityBanner.layoutParams = binding.categoryAllActivityBanner.layoutParams.apply {
                     height = dpToPx(this@CategoryActivity, size.height.toFloat())
                 }
-                category_all_activity_banner.addView(progressAdv)
+                binding.categoryAllActivityBanner.addView(progressAdv)
             }
             var previousBanner = bannerAdView
             bannerAdView = BannerAdView(this).also { bannerView ->
@@ -156,9 +156,9 @@ class CategoryActivity : MusicPlayerOnlineActivity(), CategoryAdapter.OnClickCat
                             try {
                                 clearAdView(previousBanner)
                                 previousBanner = null
-                                category_all_activity_banner.addView(bannerView)
+                                binding.categoryAllActivityBanner.addView(bannerView)
                             } catch (e: Exception) {
-                                YandexMetrica.reportError("PlayMusic1", e.message)
+                                AppMetrica.reportError("PlayMusic1", e.message)
                             }
                         }
                     }
@@ -177,8 +177,8 @@ class CategoryActivity : MusicPlayerOnlineActivity(), CategoryAdapter.OnClickCat
                             progressAdv.let { childView ->
                                 (childView.parent as? ViewGroup)?.removeView(childView)
                             }
-                            category_all_activity_banner.removeAllViews()
-                            category_all_activity_banner.addView(textViewAdvHint)
+                            binding.categoryAllActivityBanner.removeAllViews()
+                            binding.categoryAllActivityBanner.addView(textViewAdvHint)
                         } else {
                             bannerAdView = previousBanner
                         }
@@ -195,7 +195,7 @@ class CategoryActivity : MusicPlayerOnlineActivity(), CategoryAdapter.OnClickCat
                 bannerView.loadAd(AdRequest.Builder().build())
             }
         } else {
-            category_all_activity_banner.isVisible = false
+            binding.categoryAllActivityBanner.isVisible = false
         }
     }
 
@@ -219,7 +219,7 @@ class CategoryActivity : MusicPlayerOnlineActivity(), CategoryAdapter.OnClickCat
         textViewAdvHint.let { childView ->
             (childView.parent as? ViewGroup)?.removeView(childView)
         }
-        category_all_activity_banner.removeAllViews()
+        binding.categoryAllActivityBanner.removeAllViews()
         bannerAdView?.destroy()
         bannerAdView?.setBannerAdEventListener(null)
     }

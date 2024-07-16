@@ -9,13 +9,12 @@ import android.view.ViewGroup
 import androidx.core.view.isVisible
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
-import com.yandex.metrica.YandexMetrica
 import com.yandex.mobile.ads.banner.BannerAdEventListener
 import com.yandex.mobile.ads.banner.BannerAdSize
 import com.yandex.mobile.ads.common.AdRequest
 import com.yandex.mobile.ads.common.AdRequestError
 import com.yandex.mobile.ads.common.ImpressionData
-import ru.denale.podcastlistener.R
+import io.appmetrica.analytics.AppMetrica
 import ru.denale.podcastlistener.common.*
 import ru.denale.podcastlistener.data.Author
 import ru.denale.podcastlistener.data.Genre
@@ -27,10 +26,10 @@ import ru.denale.podcastlistener.feature.adapter.CategoryAdapter
 import ru.denale.podcastlistener.feature.adapter.MusicAdapter
 import ru.denale.podcastlistener.feature.authors.AuthorsActivity
 import ru.denale.podcastlistener.feature.category.CategoryActivity
-import kotlinx.android.synthetic.main.fragment_home.*
 import org.koin.android.ext.android.inject
 import org.koin.android.viewmodel.ext.android.viewModel
 import ru.denale.podcastlistener.BuildConfig
+import ru.denale.podcastlistener.databinding.FragmentHomeBinding
 import ru.denale.podcastlistener.feature.activities.playmusic.PlayMusic2
 import java.util.*
 
@@ -42,75 +41,78 @@ class HomeFragment : MusicPlayerOnlineFragment(), MusicAdapter.SetOnClick,
     var topBannerAdapter: BannerAdapter? = null
     var bottomBannerAdapter: BannerAdapter? = null
     private var isAdvAllowed = false
+    private lateinit var binding: FragmentHomeBinding
+
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
-    ): View? {
-        return inflater.inflate(R.layout.fragment_home, container, false)
+    ): View {
+        binding = FragmentHomeBinding.inflate(inflater, container, false)
+        return binding.root
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
         populateTopAdBanner()
-        recycle_category.layoutManager =
+        binding.recycleCategory.layoutManager =
             LinearLayoutManager(requireContext(), RecyclerView.HORIZONTAL, false)
-        recycle_category.adapter = categoryAdapter
+        binding.recycleCategory.adapter = categoryAdapter
         categoryAdapter.onClickCategory = this
 
-        recycle_authors.layoutManager =
+        binding.recycleAuthors.layoutManager =
             LinearLayoutManager(requireContext(), RecyclerView.HORIZONTAL, false)
-        recycle_authors.adapter = authorsAdapter
+        binding.recycleAuthors.adapter = authorsAdapter
         authorsAdapter.onAuthorClicked = this
 
         homeViewModel.topBannerLiveData.observe(viewLifecycleOwner) {
-            topBannerIndicator.isVisible = it.size > 1
+            binding.topBannerIndicator.isVisible = it.size > 1
             if (it.isEmpty()) return@observe
             topBannerAdapter = BannerAdapter(this, it)
-            topBannerSliderViewPager.adapter = topBannerAdapter
-            topBannerSliderViewPager.post {
-                val viewPagerHeight = (((topBannerSliderViewPager.width - convertDpToPixel(
+            binding.topBannerSliderViewPager.adapter = topBannerAdapter
+            binding.topBannerSliderViewPager.post {
+                val viewPagerHeight = (((binding.topBannerSliderViewPager.width - convertDpToPixel(
                     32f,
                     requireContext()
                 )) * 173) / 328).toInt()
-                val layoutParams = topBannerSliderViewPager.layoutParams
+                val layoutParams = binding.topBannerSliderViewPager.layoutParams
                 layoutParams.height = viewPagerHeight
-                topBannerSliderViewPager.layoutParams = layoutParams
+                binding.topBannerSliderViewPager.layoutParams = layoutParams
             }
 
-            topBannerIndicator.setViewPager2(topBannerSliderViewPager)
+            binding.topBannerIndicator.setViewPager2(binding.topBannerSliderViewPager)
         }
 
         homeViewModel.bottomBannerLiveData.observe(viewLifecycleOwner) {
-            bottomBannerIndicator.isVisible = it.size > 1
-            main_screen_bottom_adv_banner.isVisible = it.isEmpty()
-            main_screen_bottom_slider.isVisible = it.isNotEmpty()
+            binding.bottomBannerIndicator.isVisible = it.size > 1
+            binding.mainScreenBottomAdvBanner.isVisible = it.isEmpty()
+            binding.mainScreenBottomSlider.isVisible = it.isNotEmpty()
             if (it.isEmpty()) {
                 populateBottomAdBanner()
             } else {
                 bottomBannerAdapter = BannerAdapter(this, it)
-                bottomBannerSliderViewPager.adapter = bottomBannerAdapter
-                bottomBannerSliderViewPager.post {
-                    val viewPagerHeight = (((bottomBannerSliderViewPager.width - convertDpToPixel(
+                binding.bottomBannerSliderViewPager.adapter = bottomBannerAdapter
+                binding.bottomBannerSliderViewPager.post {
+                    val viewPagerHeight = (((binding.bottomBannerSliderViewPager.width - convertDpToPixel(
                         32f,
                         requireContext()
                     )) * 100) / 328).toInt()
-                    val layoutParams = bottomBannerSliderViewPager.layoutParams
+                    val layoutParams = binding.bottomBannerSliderViewPager.layoutParams
                     layoutParams.height = viewPagerHeight
-                    bottomBannerSliderViewPager.layoutParams = layoutParams
+                    binding.bottomBannerSliderViewPager.layoutParams = layoutParams
                 }
 
-                bottomBannerIndicator.setViewPager2(bottomBannerSliderViewPager)
+                binding.bottomBannerIndicator.setViewPager2(binding.bottomBannerSliderViewPager)
             }
         }
 
         homeViewModel.authorsLiveData.observe(viewLifecycleOwner) {
             authorsAdapter.authorsArray = it.list as ArrayList<Any>
-            main_loadingView.isVisible = false
-            main_content_view.isVisible = true
-            home_screen_authors_warning.isVisible = !it.warning.isNullOrEmpty()
-            home_screen_authors_warning.text = it.warning.orEmpty()
+            binding.mainLoadingView.isVisible = false
+            binding.mainContentView.isVisible = true
+            binding.homeScreenAuthorsWarning.isVisible = !it.warning.isNullOrEmpty()
+            binding.homeScreenAuthorsWarning.text = it.warning.orEmpty()
         }
 
         homeViewModel.categoryLiveData.observe(viewLifecycleOwner) {
@@ -120,19 +122,19 @@ class HomeFragment : MusicPlayerOnlineFragment(), MusicAdapter.SetOnClick,
         homeViewModel.progressLiveData.observe(viewLifecycleOwner) {
             setProgressIndicator(it)
         }
-        btn_all_genres.setOnClickListener {
+        binding.btnAllGenres.setOnClickListener {
             startActivity(Intent(requireContext(), CategoryActivity::class.java))
         }
 
-        frame_all_genres.setOnClickListener {
+        binding.frameAllGenres.setOnClickListener {
             startActivity(Intent(requireContext(), CategoryActivity::class.java))
         }
 
-        btn_all_authors.setOnClickListener {
+        binding.btnAllAuthors.setOnClickListener {
             startActivity(Intent(requireContext(), AuthorsActivity::class.java))
         }
 
-        frame_all_authors.setOnClickListener {
+        binding.frameAllAuthors.setOnClickListener {
             startActivity(Intent(requireContext(), AuthorsActivity::class.java))
         }
     }
@@ -141,17 +143,17 @@ class HomeFragment : MusicPlayerOnlineFragment(), MusicAdapter.SetOnClick,
     private fun populateTopAdBanner() {
         if (homeViewModel.isAdvertisementAllowed()) {
             isAdvAllowed = true
-            main_screen_top_adv_banner.isVisible = true
+            binding.mainScreenTopAdvBanner.isVisible = true
             val size =
                 BannerAdSize.stickySize(requireContext(), resources.displayMetrics.widthPixels)
-            main_screen_top_adv_banner.isVisible = false
-            main_screen_top_adv_banner_fail_text.isVisible = false
-            main_screen_top_adv_banner_progress.isVisible = true
-            main_screen_top_adv_banner.layoutParams =
-                    main_screen_top_adv_banner.layoutParams.apply {
+            binding.mainScreenTopAdvBanner.isVisible = false
+            binding.mainScreenTopAdvBannerFailText.isVisible = false
+            binding.mainScreenTopAdvBannerProgress.isVisible = true
+            binding.mainScreenTopAdvBanner.layoutParams =
+                binding.mainScreenTopAdvBanner.layoutParams.apply {
                         height = dpToPx(requireContext(), size.height.toFloat())
                     }
-            main_screen_top_adv_banner.also { bannerView ->
+            binding.mainScreenTopAdvBanner.also { bannerView ->
                 bannerView.setAdSize(size)
                 bannerView.setAdUnitId(BuildConfig.MAIN_CENTER_AD_UNIT_ID)
                 bannerView.setBannerAdEventListener(object : BannerAdEventListener {
@@ -162,22 +164,22 @@ class HomeFragment : MusicPlayerOnlineFragment(), MusicAdapter.SetOnClick,
                         if (isDetached) {
                             return
                         }
-                        YandexMetrica.reportEvent("MainTopBanner", "success")
-                        main_screen_top_adv_banner.isVisible = true
-                        main_screen_top_adv_banner_fail_text.isVisible = false
-                        main_screen_top_adv_banner_progress.isVisible = false
-                        main_screen_top_adv_banner.forceLayout()
-                        main_screen_top_adv_banner.requestLayout()
+                        AppMetrica.reportEvent("MainTopBanner", "success")
+                        binding.mainScreenTopAdvBanner.isVisible = true
+                        binding.mainScreenTopAdvBannerFailText.isVisible = false
+                        binding.mainScreenTopAdvBannerProgress.isVisible = false
+                        binding.mainScreenTopAdvBanner.forceLayout()
+                        binding.mainScreenTopAdvBanner.requestLayout()
                     }
 
                     override fun onAdFailedToLoad(adRequestError: AdRequestError) {
                         if (isDetached) {
                             return
                         }
-                        main_screen_top_adv_banner.isVisible = false
-                        main_screen_top_adv_banner_fail_text.isVisible = true
-                        main_screen_top_adv_banner_progress.isVisible = false
-                        YandexMetrica.reportEvent("MainTopBanner", "error on init")
+                        binding.mainScreenTopAdvBanner.isVisible = false
+                        binding.mainScreenTopAdvBannerFailText.isVisible = true
+                        binding.mainScreenTopAdvBannerProgress.isVisible = false
+                        AppMetrica.reportEvent("MainTopBanner", "error on init")
                     }
 
                     override fun onAdClicked() = Unit
@@ -191,7 +193,7 @@ class HomeFragment : MusicPlayerOnlineFragment(), MusicAdapter.SetOnClick,
                 bannerView.loadAd(AdRequest.Builder().build())
             }
         } else {
-            main_screen_top_adv_banner.isVisible = false
+            binding.mainScreenTopAdvBanner.isVisible = false
         }
     }
 
@@ -200,14 +202,14 @@ class HomeFragment : MusicPlayerOnlineFragment(), MusicAdapter.SetOnClick,
             isAdvAllowed = true
             val size =
                 BannerAdSize.stickySize(requireContext(), resources.displayMetrics.widthPixels)
-            main_screen_bottom_adv_banner.isVisible = false
-            main_screen_bottom_adv_banner_fail_text.isVisible = false
-            main_screen_bottom_adv_banner_progress.isVisible = true
-                main_screen_bottom_adv_banner.layoutParams =
-                    main_screen_bottom_adv_banner.layoutParams.apply {
+            binding.mainScreenBottomAdvBanner.isVisible = false
+            binding.mainScreenBottomAdvBannerFailText.isVisible = false
+            binding.mainScreenBottomAdvBannerProgress.isVisible = true
+            binding.mainScreenBottomAdvBanner.layoutParams =
+                binding.mainScreenBottomAdvBanner.layoutParams.apply {
                         height = dpToPx(requireContext(), size.height.toFloat())
                     }
-            main_screen_bottom_adv_banner.also { bannerView ->
+            binding.mainScreenBottomAdvBanner.also { bannerView ->
                 bannerView.setAdSize(size)
                 bannerView.setAdUnitId(BuildConfig.MAIN_BOTTOM_AD_UNIT_ID)
                 bannerView.setBannerAdEventListener(object : BannerAdEventListener {
@@ -218,22 +220,22 @@ class HomeFragment : MusicPlayerOnlineFragment(), MusicAdapter.SetOnClick,
                         if (isDetached) {
                             return
                         }
-                        YandexMetrica.reportEvent("BottomTopBanner", "success")
-                        main_screen_bottom_adv_banner.isVisible = true
-                        main_screen_bottom_adv_banner_fail_text.isVisible = false
-                        main_screen_bottom_adv_banner_progress.isVisible = false
-                        main_screen_bottom_adv_banner.forceLayout()
-                        main_screen_bottom_adv_banner.requestLayout()
+                        AppMetrica.reportEvent("BottomTopBanner", "success")
+                        binding.mainScreenBottomAdvBanner.isVisible = true
+                        binding.mainScreenBottomAdvBannerFailText.isVisible = false
+                        binding.mainScreenBottomAdvBannerProgress.isVisible = false
+                        binding.mainScreenBottomAdvBanner.forceLayout()
+                        binding.mainScreenBottomAdvBanner.requestLayout()
                     }
 
                     override fun onAdFailedToLoad(adRequestError: AdRequestError) {
                         if (isDetached) {
                             return
                         }
-                        main_screen_bottom_adv_banner.isVisible = false
-                        main_screen_bottom_adv_banner_fail_text.isVisible = true
-                        main_screen_bottom_adv_banner_progress.isVisible = false
-                        YandexMetrica.reportEvent("BottomTopBanner", "error on init")
+                        binding.mainScreenBottomAdvBanner.isVisible = false
+                        binding.mainScreenBottomAdvBannerFailText.isVisible = true
+                        binding.mainScreenBottomAdvBannerProgress.isVisible = false
+                        AppMetrica.reportEvent("BottomTopBanner", "error on init")
                     }
 
                     override fun onAdClicked() = Unit
@@ -247,7 +249,7 @@ class HomeFragment : MusicPlayerOnlineFragment(), MusicAdapter.SetOnClick,
                 bannerView.loadAd(AdRequest.Builder().build())
             }
         } else {
-            main_screen_bottom_adv_banner.isVisible = false
+            binding.mainScreenBottomAdvBanner.isVisible = false
         }
     }
 

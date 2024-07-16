@@ -6,7 +6,6 @@ import android.view.ViewGroup
 import android.widget.ImageView
 import android.widget.TextView
 import androidx.recyclerview.widget.ListAdapter
-import androidx.recyclerview.widget.RecyclerView
 import androidx.recyclerview.widget.RecyclerView.ViewHolder
 import com.yandex.mobile.ads.nativeads.NativeAd
 import ru.denale.podcastlistener.R
@@ -48,10 +47,6 @@ class AuthorsAdapter(val imageLoadingService: ImageLoadingService) :
             AUTHORS_VIEW_TYPE -> AuthorsViewHolder(
                 LayoutInflater.from(parent.context).inflate(R.layout.category_item, parent, false)
             )
-            ADV_VIEW_TYPE -> AdvViewHolder(
-                LayoutInflater.from(parent.context)
-                    .inflate(R.layout.advertisement_item, parent, false)
-            )
             else -> AuthorsViewHolder(
                 LayoutInflater.from(parent.context).inflate(R.layout.category_item, parent, false)
             )
@@ -61,7 +56,6 @@ class AuthorsAdapter(val imageLoadingService: ImageLoadingService) :
     override fun onBindViewHolder(holder: ViewHolder, position: Int) {
         when (holder) {
             is AuthorsViewHolder -> holder.bindCategory(authorsArray[position] as Author)
-            is AdvViewHolder -> holder.bindCategory(authorsArray[position] as NativeAd)
         }
     }
 
