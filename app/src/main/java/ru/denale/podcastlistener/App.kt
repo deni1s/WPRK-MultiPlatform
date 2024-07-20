@@ -9,10 +9,32 @@ import com.bumptech.glide.module.AppGlideModule
 import com.yandex.mobile.ads.common.MobileAds
 import io.appmetrica.analytics.AppMetrica
 import io.appmetrica.analytics.AppMetricaConfig
+import io.reactivex.plugins.RxJavaPlugins
+import org.koin.android.ext.koin.androidContext
+import org.koin.android.viewmodel.dsl.viewModel
+import org.koin.core.context.startKoin
+import org.koin.dsl.module
+import ru.denale.podcastlistener.data.database.MIGRATION_1_2
 import ru.denale.podcastlistener.data.database.MusicDatabase
-import ru.denale.podcastlistener.data.repo.*
-import ru.denale.podcastlistener.data.repo.source.*
+import ru.denale.podcastlistener.data.repo.AdvertisementRepository
+import ru.denale.podcastlistener.data.repo.AdvertismentRepositoryImpl
+import ru.denale.podcastlistener.data.repo.AuthorRepository
+import ru.denale.podcastlistener.data.repo.AuthorRepositoryImpl
+import ru.denale.podcastlistener.data.repo.BannerRepository
+import ru.denale.podcastlistener.data.repo.BannerRepositoryImpl
+import ru.denale.podcastlistener.data.repo.CategoryRepository
+import ru.denale.podcastlistener.data.repo.CategoryRepositoryImpl
+import ru.denale.podcastlistener.data.repo.MusicRepository
+import ru.denale.podcastlistener.data.repo.MusicRepositoryImpl
+import ru.denale.podcastlistener.data.repo.UserRepository
+import ru.denale.podcastlistener.data.repo.UserRepositoryImpl
+import ru.denale.podcastlistener.data.repo.source.AuthorRemoteDataSource
+import ru.denale.podcastlistener.data.repo.source.BannerRemoteDataSource
+import ru.denale.podcastlistener.data.repo.source.CategoryRemoteDataSource
+import ru.denale.podcastlistener.data.repo.source.MusicRemoteDataSource
+import ru.denale.podcastlistener.data.repo.source.UserRemoteDataSource
 import ru.denale.podcastlistener.feature.activities.musics.MusicsViewModel
+import ru.denale.podcastlistener.feature.activities.playmusic.PlayMusicViewModel2
 import ru.denale.podcastlistener.feature.adapter.AuthorsAdapter
 import ru.denale.podcastlistener.feature.adapter.CategoryAdapter
 import ru.denale.podcastlistener.feature.adapter.MusicAdapter
@@ -23,12 +45,7 @@ import ru.denale.podcastlistener.services.FrescoImageLoadingServiceImpl
 import ru.denale.podcastlistener.services.ImageLoadingService
 import ru.denale.podcastlistener.services.http.createApiService
 import ru.denale.podcastlistener.services.http.createClient
-import org.koin.android.ext.koin.androidContext
-import org.koin.android.viewmodel.dsl.viewModel
-import org.koin.core.context.startKoin
-import org.koin.dsl.module
-import ru.denale.podcastlistener.data.database.MIGRATION_1_2
-import ru.denale.podcastlistener.feature.activities.playmusic.PlayMusicViewModel2
+
 
 private const val PREFERENCES_NAME = "podcast_preferences"
 private const val DATABASE_NAME = "podcast-types-db"
@@ -42,6 +59,7 @@ class App : Application() {
         //Timber.plant(Timber.DebugTree())
         //  Fresco.initialize(this)
 
+        RxJavaPlugins.setErrorHandler { e: Throwable? -> }
         MobileAds.initialize(
             this
         ) { Log.d(YANDEX_MOBILE_ADS_TAG, "SDK initialized") }

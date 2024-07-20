@@ -132,12 +132,12 @@ class PlayMusic2 : AppCompatActivity() {
                             currentPosition,
                             data.session?.progress?.toLong() ?: 0L
                         )
-                        mediaController?.play()
+                  //      mediaController?.play()
                     } else {
                         currentPosition = mediaController?.currentMediaItemIndex ?: 0
                         displayMusicInfoItem(mediaController?.currentMediaItem)
                         restoreMediaState()
-                        mediaController?.play()
+                       // mediaController?.play()
                     }
                 }
             }
@@ -154,9 +154,12 @@ class PlayMusic2 : AppCompatActivity() {
                     binding.slider.value = it
                 }
         }
+        if (mediaController?.isPlaying == true) {
+            setTimer()
+            binding.btnPlayMusic.setImageResource(R.drawable.ic_pause)
+        }
         //if (mediaController?.isPlaying == true) {
-        setTimer()
-        binding.btnPlayMusic.setImageResource(R.drawable.ic_pause)
+//        binding.btnPlayMusic.setImageResource(R.drawable.ic_pause)
 //        } else {
 //            btn_play_music.setImageResource(R.drawable.ic_play)
 //        }
@@ -465,6 +468,10 @@ class PlayMusic2 : AppCompatActivity() {
     override fun onDestroy() {
         binding.playerTopAdvBanner.destroy()
         binding.playerTopAdvBanner.setBannerAdEventListener(null)
+
+        mediaController = null
+        controllerFuture?.cancel(false)
+        controllerFuture = null
 
         super.onDestroy()
         timer?.cancel()

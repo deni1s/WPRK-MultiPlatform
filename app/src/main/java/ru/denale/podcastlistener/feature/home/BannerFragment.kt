@@ -41,7 +41,7 @@ class BannerFragment : Fragment() {
         banner: Banner
     ): View {
         val imageView = inflater.inflate(R.layout.fragment_banner, container, false) as ImageView
-        imageLoadingService.loadGif(imageView, banner.imageUrl, requireContext())
+        imageLoadingService.loadGif(imageView, banner.imageUrl, activity?.applicationContext ?: requireContext())
         imageView.setOnClickListener {
             when (banner.type) {
                 "url" -> openInternetAddress(banner.payload.orEmpty())
