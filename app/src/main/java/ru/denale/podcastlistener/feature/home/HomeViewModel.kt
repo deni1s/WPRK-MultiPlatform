@@ -25,7 +25,7 @@ class HomeViewModel(
     val topBannerLiveData = MutableLiveData<List<Banner>>()
     val bottomBannerLiveData = MutableLiveData<List<Banner>>()
     val progressLiveData = MutableLiveData<Boolean>()
-    val categoryLiveData = MutableLiveData<List<Any>>()
+    val categoryLiveData = MutableLiveData<GenreResponse>()
     val authorsLiveData = MutableLiveData<AuthorResponse>()
 
     init {
@@ -40,22 +40,20 @@ class HomeViewModel(
             })
 
         bannerRepository.getBanners(TOP_BANNER_TYPE)
-            .map { it.list }
             .subscribeOn(Schedulers.io())
             .observeOn(AndroidSchedulers.mainThread())
-            .subscribe(object : MusicPlayerSignleObserver<List<Banner>>(compositeDisposable) {
-                override fun onSuccess(t: List<Banner>) {
-                    topBannerLiveData.value = t
+            .subscribe(object : MusicPlayerSignleObserver<BannerResponse>(compositeDisposable) {
+                override fun onSuccess(t: BannerResponse) {
+                    topBannerLiveData.value = t.list
                 }
             })
 
         bannerRepository.getBanners(BOTTOM_BANNER_TYPE)
-            .map { it.list }
             .subscribeOn(Schedulers.io())
             .observeOn(AndroidSchedulers.mainThread())
-            .subscribe(object : MusicPlayerSignleObserver<List<Banner>>(compositeDisposable) {
-                override fun onSuccess(t: List<Banner>) {
-                    bottomBannerLiveData.value = t
+            .subscribe(object : MusicPlayerSignleObserver<BannerResponse>(compositeDisposable) {
+                override fun onSuccess(t: BannerResponse) {
+                    bottomBannerLiveData.value = t.list
                 }
             })
 
@@ -64,7 +62,7 @@ class HomeViewModel(
             .observeOn(AndroidSchedulers.mainThread())
             .subscribe(object : MusicPlayerSignleObserver<GenreResponse>(compositeDisposable) {
                 override fun onSuccess(t: GenreResponse) {
-                    categoryLiveData.value = t.list
+                    categoryLiveData.value = t
                 }
 
                 override fun onError(e: Throwable) {

@@ -45,10 +45,6 @@
             android:resource="@drawable/ic_baseline_monetization_on_24" />
 
         <activity
-            android:name="com.my.target.common.MyTargetActivity"
-            android:configChanges="keyboard|keyboardHidden|orientation|screenLayout|uiMode|screenSize|smallestScreenSize" />
-
-        <activity
             android:name="ru.denale.podcastlistener.feature.authors.AuthorsActivity"
             android:screenOrientation="portrait" />
         <activity

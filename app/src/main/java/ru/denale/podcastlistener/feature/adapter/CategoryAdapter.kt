@@ -14,18 +14,15 @@ import androidx.recyclerview.widget.RecyclerView.ViewHolder
 import com.yandex.mobile.ads.nativeads.NativeAd
 import ru.denale.podcastlistener.data.Author
 
-private const val CATEGORY_VIEW_TYPE = 1
-private const val ADV_VIEW_TYPE = 2
-
 class CategoryAdapter(val imageLoadingService: ImageLoadingService) :
     RecyclerView.Adapter<ViewHolder>() {
 
-    var onClickCategory:OnClickCategory?=null
-    var categoryArray = ArrayList<Any>()
-    set(value) {
-        field = value
-        notifyDataSetChanged()
-    }
+    var onClickCategory: OnClickCategory? = null
+    var categoryArray = ArrayList<Genre>()
+        set(value) {
+            field = value
+            notifyDataSetChanged()
+        }
 
     inner class CategoryViewHolder(itemView: View) : ViewHolder(itemView) {
 
@@ -44,22 +41,9 @@ class CategoryAdapter(val imageLoadingService: ImageLoadingService) :
     }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
-        return when (viewType) {
-            CATEGORY_VIEW_TYPE -> CategoryViewHolder(
-                LayoutInflater.from(parent.context).inflate(R.layout.category_item, parent, false)
-            )
-            else -> CategoryViewHolder(
-                LayoutInflater.from(parent.context).inflate(R.layout.category_item, parent, false)
-            )
-        }
-    }
-
-    override fun getItemViewType(position: Int): Int {
-        return when (categoryArray[position]) {
-            is Author -> CATEGORY_VIEW_TYPE
-            is NativeAd -> ADV_VIEW_TYPE
-            else -> -1
-        }
+        return CategoryViewHolder(
+            LayoutInflater.from(parent.context).inflate(R.layout.category_item, parent, false)
+        )
     }
 
     override fun getItemCount(): Int = categoryArray.size
@@ -70,7 +54,7 @@ class CategoryAdapter(val imageLoadingService: ImageLoadingService) :
 
     override fun onBindViewHolder(holder: ViewHolder, position: Int) {
         when (holder) {
-            is CategoryAdapter.CategoryViewHolder -> holder.bindCategory(categoryArray[position] as Genre)
+            is CategoryAdapter.CategoryViewHolder -> holder.bindCategory(categoryArray[position])
         }
     }
 }

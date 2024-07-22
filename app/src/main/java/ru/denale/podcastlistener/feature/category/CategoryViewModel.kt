@@ -10,6 +10,7 @@ import io.reactivex.Single
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.schedulers.Schedulers
 import io.reactivex.subjects.PublishSubject
+import ru.denale.podcastlistener.data.Genre
 import ru.denale.podcastlistener.data.GenreResponse
 
 private const val LIMIT_SIZE = 20
@@ -36,7 +37,7 @@ class CategoryViewModel(
         loadCategories(totalItemsCount)
     }
 
-    val categoryLiveData = PublishSubject.create<List<Any>>()
+    val categoryLiveData = PublishSubject.create<List<Genre>>()
     val progressbarLiveData = MutableLiveData<Boolean>()
 
     init {

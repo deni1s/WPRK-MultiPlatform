@@ -20,3 +20,7 @@
 # hide the original source file name.
 #-renamesourcefileattribute SourceFile
 -keep class retrofit.** { *; }
+-keep class ru.denale.podcastlistener.data.** { *; }
+-keep class ru.denale.podcastlistener.data.Genre
+-keep class ru.denale.podcastlistener.data.Banner
+-keep class ru.denale.podcastlistener.data.Author

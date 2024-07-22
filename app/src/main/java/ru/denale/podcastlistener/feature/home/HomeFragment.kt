@@ -108,7 +108,7 @@ class HomeFragment : MusicPlayerOnlineFragment(), MusicAdapter.SetOnClick,
         }
 
         homeViewModel.authorsLiveData.observe(viewLifecycleOwner) {
-            authorsAdapter.authorsArray = it.list as ArrayList<Any>
+            authorsAdapter.authorsArray = it.list
             binding.mainLoadingView.isVisible = false
             binding.mainContentView.isVisible = true
             binding.homeScreenAuthorsWarning.isVisible = !it.warning.isNullOrEmpty()
@@ -116,7 +116,7 @@ class HomeFragment : MusicPlayerOnlineFragment(), MusicAdapter.SetOnClick,
         }
 
         homeViewModel.categoryLiveData.observe(viewLifecycleOwner) {
-            categoryAdapter.categoryArray = it as ArrayList<Any>
+            categoryAdapter.categoryArray = it.list
         }
 
         homeViewModel.progressLiveData.observe(viewLifecycleOwner) {
