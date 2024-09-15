@@ -16,7 +16,7 @@ import androidx.recyclerview.widget.GridLayoutManager
 import ru.denale.podcastlistener.feature.adapter.EndlessScroll
 import io.reactivex.disposables.Disposable
 import org.koin.android.ext.android.inject
-import org.koin.android.viewmodel.ext.android.viewModel
+import org.koin.androidx.viewmodel.ext.android.viewModel
 import ru.denale.podcastlistener.databinding.FragmentCategoryBinding
 
 @Deprecated("Это для боттом шита, сам экран на активити")

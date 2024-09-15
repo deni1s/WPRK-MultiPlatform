@@ -31,7 +31,7 @@ import ru.denale.podcastlistener.feature.adapter.EndlessScroll
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.disposables.Disposable
 import org.koin.android.ext.android.inject
-import org.koin.android.viewmodel.ext.android.viewModel
+import org.koin.androidx.viewmodel.ext.android.viewModel
 import ru.denale.podcastlistener.BuildConfig
 import ru.denale.podcastlistener.databinding.ActivityCategoryBinding
 

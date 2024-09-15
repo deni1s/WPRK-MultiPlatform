@@ -25,7 +25,7 @@ import ru.denale.podcastlistener.services.ImageLoadingService
 import ru.denale.podcastlistener.services.http.createApiService
 import ru.denale.podcastlistener.services.http.createClient
 import org.koin.android.ext.koin.androidContext
-import org.koin.android.viewmodel.dsl.viewModel
+import org.koin.androidx.viewmodel.dsl.viewModel
 import org.koin.core.context.startKoin
 import org.koin.dsl.module
 import ru.denale.podcastlistener.data.database.MIGRATION_1_2

@@ -31,7 +31,7 @@ import com.yandex.mobile.ads.common.AdRequestError
 import com.yandex.mobile.ads.common.ImpressionData
 import io.appmetrica.analytics.AppMetrica
 import org.koin.android.ext.android.inject
-import org.koin.android.viewmodel.ext.android.viewModel
+import org.koin.androidx.viewmodel.ext.android.viewModel
 import org.koin.core.parameter.parametersOf
 import ru.denale.podcastlistener.BuildConfig
 import ru.denale.podcastlistener.R
@@ -166,7 +166,7 @@ class PlayMusic2 : AppCompatActivity() {
     }
 
     private fun seekTo(position: Int) {
-        binding.slider.value = 0F
+        binding.slider.value = binding.slider.valueFrom
         mediaController?.seekTo(position, 0L)
     }
 
@@ -229,6 +229,7 @@ class PlayMusic2 : AppCompatActivity() {
         if (savedInstanceState == null) {
             populateTopAdBanner()
         }
+        askNotificationPermission()
 
         playMusicViewModel.isAdvertisementAvailableData.observe(this) {
             isAdvertisementAvialable = it
@@ -260,11 +261,11 @@ class PlayMusic2 : AppCompatActivity() {
             }
         }
         binding.btnSkipPrevious.setOnClickListener {
-            binding.slider.value = 0F
+            binding.slider.value = binding.slider.valueFrom
             mediaController?.seekToPrevious()
         }
         binding.btnSkipNext.setOnClickListener {
-            binding.slider.value = 0F
+            binding.slider.value = binding.slider.valueFrom
             mediaController?.seekToNext()
         }
     }
@@ -311,8 +312,8 @@ class PlayMusic2 : AppCompatActivity() {
         timer = null
     }
 
-    override fun onStart() {
-        super.onStart()
+    override fun onRestart() {
+        super.onRestart()
         askNotificationPermission()
     }
 

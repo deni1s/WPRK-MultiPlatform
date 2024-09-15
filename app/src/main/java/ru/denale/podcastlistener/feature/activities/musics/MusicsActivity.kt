@@ -29,7 +29,7 @@ import ru.denale.podcastlistener.common.EXTRA_MUSIC
 import ru.denale.podcastlistener.common.SCREEN_TITLE_DATA
 import io.reactivex.disposables.Disposable
 import org.koin.android.ext.android.inject
-import org.koin.android.viewmodel.ext.android.viewModel
+import org.koin.androidx.viewmodel.ext.android.viewModel
 import org.koin.core.parameter.parametersOf
 import ru.denale.podcastlistener.BuildConfig
 import ru.denale.podcastlistener.databinding.ActivityMusicsBinding
